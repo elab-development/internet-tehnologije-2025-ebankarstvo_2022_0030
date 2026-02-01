@@ -7,7 +7,7 @@ import {
     pgEnum,
 } from "drizzle-orm/pg-core"
 
-export const accountTypeEnum = pgEnum("account_type", ["CHECKING", "MULTY_CURRENCY"])
+export const accountTypeEnum = pgEnum("account_type", ["CHECKING", "MULTICURRENCY"])
 
 export const statusEnum = pgEnum("status", ["ACTIVE", "INACTIVE"])
 
@@ -29,7 +29,7 @@ export const accounts = pgTable("accounts", {
     accountId: uuid("account_id").primaryKey().defaultRandom(),
     number: varchar("number", {length: 50}).notNull().unique(),
     accountType: accountTypeEnum("account_type").notNull(),
-    status: varchar("status", {length: 20}).notNull(),
+    status: statusEnum("status").notNull(),
     openingDate: date("opening_date").notNull(),
     userId: uuid("user_id").notNull()
 })
@@ -43,7 +43,7 @@ export const balances = pgTable("balances", {
 
 export const transactions = pgTable("transactions", {
     transactionId: uuid("transaction_id").primaryKey().defaultRandom(),
-    date: date("date").defaultNow(),
+    date: date("date").notNull(),
     description: varchar("description", {length: 255}),
     amount: numeric("amount", {precision: 14, scale: 2}).notNull(),
     senderId: uuid("sender_id").notNull(),
