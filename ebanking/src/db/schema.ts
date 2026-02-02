@@ -5,13 +5,18 @@ import {
     date,
     numeric,
     pgEnum,
+    uniqueIndex,
 } from "drizzle-orm/pg-core"
 
-export const accountTypeEnum = pgEnum("account_type", ["CHECKING", "MULTICURRENCY"])
+export const accountTypeEnum = pgEnum("account_type",
+    ["CHECKING", "MULTICURRENCY"])
 
 export const statusEnum = pgEnum("status", ["ACTIVE", "INACTIVE"])
 
 export const genderEnum = pgEnum("gender", ["MALE", "FEMALE"])
+
+export const categoryEnum = pgEnum("category", [
+    "FOOD", "FUEL", "RENT", "BILLS", "SHOPPING", "ENTERTAINMENT", "HEALTH", "TRANSPORT", "OTHER"])
 
 export const users = pgTable("users", {
     userId: uuid("user_id").primaryKey().defaultRandom(),
@@ -31,23 +36,28 @@ export const accounts = pgTable("accounts", {
     accountType: accountTypeEnum("account_type").notNull(),
     status: statusEnum("status").notNull(),
     openingDate: date("opening_date").notNull(),
-    userId: uuid("user_id").notNull()
+    userId: uuid("user_id").notNull().references(() => users.userId, { onDelete: "cascade" })
 })
 
 export const balances = pgTable("balances", {
     balanceId: uuid("balance_id").primaryKey().defaultRandom(),
     currency: varchar("currency", { length: 3 }).notNull(),
     amount: numeric("amount", { precision: 14, scale: 2 }).notNull(),
-    accountId: uuid("account_id").notNull()
+    accountId: uuid("account_id").notNull().references(() => accounts.accountId, { onDelete: "cascade" })
 })
 
 export const transactions = pgTable("transactions", {
     transactionId: uuid("transaction_id").primaryKey().defaultRandom(),
     date: date("date").notNull(),
     description: varchar("description", { length: 255 }),
-    amount: numeric("amount", { precision: 14, scale: 2 }).notNull(),
-    senderId: uuid("sender_id").notNull(),
-    receiverId: uuid("receiver_id").notNull()
+    fromCurrency: varchar("from_currency", {length: 3}).notNull(),
+    toCurrency: varchar("to_currency", {length: 3}).notNull(),
+    amountFrom: numeric("amount_from", { precision: 14, scale: 2 }).notNull(),
+    amountTo: numeric("amount_to", { precision: 14, scale: 2 }).notNull(),
+    category: categoryEnum("category").notNull(),
+    senderId: uuid("sender_id").notNull().references(() => accounts.userId, {onDelete: "restrict"}),
+    receiverId: uuid("receiver_id").notNull().references(() => accounts.userId, {onDelete: "restrict"}),
+    exchangeRateId: uuid("exchange_rate_id").references(() => exchangeRates.exchangeRateId, {onDelete: "set null"})
 })
 
 export const exchangeRates = pgTable("exchange_rates", {
@@ -56,4 +66,6 @@ export const exchangeRates = pgTable("exchange_rates", {
     baseCurrency: varchar("base_currency", { length: 3 }).notNull(),
     quoteCurrency: varchar("quote_currency", { length: 3 }).notNull(),
     rate: numeric("rate", { precision: 14, scale: 6 }).notNull(),
-})
+}, (t) => ({
+    uniq: uniqueIndex("uniq_rate_day_pair").on(t.rateDate, t.baseCurrency, t.quoteCurrency)
+}))
