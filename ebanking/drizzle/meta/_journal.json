@@ -29,6 +29,13 @@
       "when": 1770056381800,
       "tag": "0003_material_mister_sinister",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1770061703543,
+      "tag": "0004_wooden_gunslinger",
+      "breakpoints": true
     }
   ]
 }

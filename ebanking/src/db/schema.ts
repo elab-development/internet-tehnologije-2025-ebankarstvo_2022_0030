@@ -46,20 +46,6 @@ export const balances = pgTable("balances", {
     accountId: uuid("account_id").notNull().references(() => accounts.accountId, { onDelete: "cascade" })
 })
 
-export const transactions = pgTable("transactions", {
-    transactionId: uuid("transaction_id").primaryKey().defaultRandom(),
-    date: date("date").notNull(),
-    description: varchar("description", { length: 255 }),
-    fromCurrency: varchar("from_currency", {length: 3}).notNull(),
-    toCurrency: varchar("to_currency", {length: 3}).notNull(),
-    amountFrom: numeric("amount_from", { precision: 14, scale: 2 }).notNull(),
-    amountTo: numeric("amount_to", { precision: 14, scale: 2 }).notNull(),
-    category: categoryEnum("category").notNull(),
-    senderId: uuid("sender_id").notNull().references(() => accounts.userId, {onDelete: "restrict"}),
-    receiverId: uuid("receiver_id").notNull().references(() => accounts.userId, {onDelete: "restrict"}),
-    exchangeRateId: uuid("exchange_rate_id").references(() => exchangeRates.exchangeRateId, {onDelete: "set null"})
-})
-
 export const exchangeRates = pgTable("exchange_rates", {
     exchangeRateId: uuid("exchange_rate_id").primaryKey().defaultRandom(),
     rateDate: date("rate_date").notNull(),
@@ -69,3 +55,17 @@ export const exchangeRates = pgTable("exchange_rates", {
 }, (t) => ({
     uniq: uniqueIndex("uniq_rate_day_pair").on(t.rateDate, t.baseCurrency, t.quoteCurrency)
 }))
+
+export const transactions = pgTable("transactions", {
+    transactionId: uuid("transaction_id").primaryKey().defaultRandom(),
+    date: date("date").notNull(),
+    description: varchar("description", { length: 255 }),
+    fromCurrency: varchar("from_currency", { length: 3 }).notNull(),
+    toCurrency: varchar("to_currency", { length: 3 }).notNull(),
+    amountFrom: numeric("amount_from", { precision: 14, scale: 2 }).notNull(),
+    amountTo: numeric("amount_to", { precision: 14, scale: 2 }).notNull(),
+    category: categoryEnum("category").notNull(),
+    senderAccountId: uuid("sender_id").notNull().references(() => accounts.accountId, { onDelete: "restrict" }),
+    receiverAccountId: uuid("receiver_id").notNull().references(() => accounts.accountId, { onDelete: "restrict" }),
+    exchangeRateId: uuid("exchange_rate_id").references(() => exchangeRates.exchangeRateId, { onDelete: "set null" })
+})
