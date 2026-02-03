@@ -65,7 +65,7 @@ export const transactions = pgTable("transactions", {
     amountFrom: numeric("amount_from", { precision: 14, scale: 2 }).notNull(),
     amountTo: numeric("amount_to", { precision: 14, scale: 2 }).notNull(),
     category: categoryEnum("category").notNull(),
-    senderAccountId: uuid("sender_id").notNull().references(() => accounts.accountId, { onDelete: "restrict" }),
-    receiverAccountId: uuid("receiver_id").notNull().references(() => accounts.accountId, { onDelete: "restrict" }),
+    senderAccountId: uuid("sender_account_id").notNull().references(() => accounts.accountId, { onDelete: "restrict" }),
+    receiverAccountId: uuid("receiver_account_id").notNull().references(() => accounts.accountId, { onDelete: "restrict" }),
     exchangeRateId: uuid("exchange_rate_id").references(() => exchangeRates.exchangeRateId, { onDelete: "set null" })
 })
