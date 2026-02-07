@@ -1,5 +1,7 @@
+import { ReactNode } from "react"
+
 type Props = {
-    children: React.ReactNode
+    children: ReactNode
     onClick?: () => void
     type?: "button" | "submit"
     disabled?: boolean

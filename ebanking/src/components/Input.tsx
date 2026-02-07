@@ -4,7 +4,7 @@ type Props = {
     onChange: (value: string) => void
     placeholder?: string
     error?: string
-    type?: "text" | "number"
+    type?: string
 }
 
 export default function Input({label, value, onChange, placeholder, error, type = "text"}: Props) {
