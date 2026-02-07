@@ -20,7 +20,7 @@ export default function ProfilePage() {
   const [err, setErr] = useState("")
 
   useEffect(() => {
-    ;(async () => {
+    ; (async () => {
       const res = await fetch("/api/auth/me")
       const data = await res.json().catch(() => ({}))
       if (!res.ok) {
@@ -34,19 +34,37 @@ export default function ProfilePage() {
 
   return (
     <AppShell>
-      <h1 className="text-xl font-semibold">Profile</h1>
+      <h1 className="text-2xl font-semibold text-slate-900">Profile</h1>
       {err ? <p className="mt-3 text-red-600">{err}</p> : null}
 
       {!me ? (
         <div className="mt-6 text-sm text-slate-500">Loading...</div>
       ) : (
         <div className="mt-6 max-w-xl rounded-xl border bg-white p-5 text-sm">
-          <p><span className="text-slate-500">Name:</span> {me.name}</p>
-          <p className="mt-1"><span className="text-slate-500">Email:</span> {me.email}</p>
-          <p className="mt-1"><span className="text-slate-500">Phone:</span> {me.phone}</p>
-          <p className="mt-1"><span className="text-slate-500">Address:</span> {me.address ?? "-"}</p>
-          <p className="mt-1"><span className="text-slate-500">Birth date:</span> {me.birthDate}</p>
-          <p className="mt-1"><span className="text-slate-500">Gender:</span> {me.gender}</p>
+          <p>
+            <span className="text-slate-600 font-medium">Name:</span>{" "}
+            <span className="text-slate-900">{me.name}</span>
+          </p>
+          <p className="mt-1">
+            <span className="text-slate-600 font-medium">Email:</span>{" "}
+            <span className="text-slate-900">{me.email}</span>
+          </p>
+          <p className="mt-1">
+            <span className="text-slate-600 font-medium">Phone:</span>{" "}
+            <span className="text-slate-900">{me.phone}</span>
+          </p>
+          <p className="mt-1">
+            <span className="text-slate-600 font-medium">Address:</span>{" "}
+            <span className="text-slate-900">{me.address}</span>
+          </p>
+          <p className="mt-1">
+            <span className="text-slate-600 font-medium">Birth date:</span>{" "}
+            <span className="text-slate-900">{me.birthDate}</span>
+          </p>
+          <p className="mt-1">
+            <span className="text-slate-600 font-medium">Gender:</span>{" "}
+            <span className="text-slate-900">{me.gender}</span>
+          </p>
         </div>
       )}
     </AppShell>

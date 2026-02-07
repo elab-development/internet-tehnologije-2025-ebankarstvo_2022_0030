@@ -80,12 +80,10 @@ export default function HomePage() {
         onChangeIndex={setSelectedIndex}
       />
 
-      {/* Quick actions -> samo Local payment */}
-      <div className="mt-6 flex items-center justify-end">
-        <Button onClick={() => router.push("/transfers")}>Local payment (Transfer)</Button>
+      <div className="mt-6 flex items-center justify-start">
+        <Button onClick={() => router.push("/transfers")}>Transfer funds</Button>
       </div>
 
-      {/* Latest transactions */}
       <section className="mt-8">
         <h2 className="text-lg font-semibold text-slate-900">Latest transactions</h2>
 

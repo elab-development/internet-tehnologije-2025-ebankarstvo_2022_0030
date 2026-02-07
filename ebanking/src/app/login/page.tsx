@@ -41,49 +41,47 @@ export default function LoginPage() {
         }
     }
     return (
-            <main className="min-h-screen bg-slate-950">
-                <div className="mx-auto flex max-w-6xl items-center px-6 py-5">
-                    <div className="flex items-center gap-3 text-white">
-                        <Image src="/icon.png" alt="Icon" width={44} height={44} priority />
-                        <div className="leading-tight">
-                            <div className="text-sm font-semibold tracking-wide">E-BANK</div>
-                            <div className="text-xs text-white/70">Internet banking</div>
-                        </div>
+        <main className="min-h-screen bg-slate-950">
+            <div className="mx-auto flex max-w-6xl items-center px-6 py-5">
+                <div className="flex items-center gap-3 text-white">
+                    <Image src="/icon.png" alt="Icon" width={44} height={44} priority />
+                    <div className="leading-tight">
+                        <div className="text-sm font-semibold tracking-wide">E-BANK</div>
+                        <div className="text-xs text-white/70">Internet banking</div>
                     </div>
                 </div>
+            </div>
 
-                <div className="mx-auto grid max-w-6xl grid-cols-1 gap-8 px-6 pb-10 pt-2 lg:grid-cols-2 lg:items-stretch">
-                    <section className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5">
-                        <div className="relative h-[320px] w-full lg:h-full lg:min-h-[560px]">
-                            <Image src="/background.png" alt="Hero" fill className="object-cover" priority />
-                            <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/35 to-black/10" />
+            <div className="mx-auto grid max-w-6xl grid-cols-1 gap-8 px-6 pb-10 pt-2 lg:grid-cols-2 lg:items-stretch">
+                <section className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5">
+                    <div className="relative h-[320px] w-full lg:h-full lg:min-h-[560px]">
+                        <Image src="/background.png" alt="Hero" fill className="object-cover" priority />
+                        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/35 to-black/10" />
+                    </div>
+                </section>
+
+                <section className="flex items-center lg:justify-end">
+                    <div className="w-full max-w-md rounded-2xl border border-white/10 bg-white p-7 shadow-xl">
+                        <div className="mb-6">
+                            <h2 className="mt-6 text-xl font-semibold text-slate-900">
+                                Log in
+                            </h2>
+                            <p className="mt-1 text-sm text-slate-500">
+                                Enter your e-mail and password.
+                            </p>
                         </div>
-                    </section>
 
-                    <section className="flex items-center lg:justify-end">
-                        <div className="w-full max-w-md rounded-2xl border border-white/10 bg-white p-7 shadow-xl">
-                            <div className="mb-6">
-                                <p className="text-xs font-semibold text-slate-500">PASSWORD</p>
-                                <div className="mt-2 h-[2px] w-20 bg-slate-900" />
-                                <h2 className="mt-6 text-xl font-semibold text-slate-900">
-                                    Log in
-                                </h2>
-                                <p className="mt-1 text-sm text-slate-500">
-                                    Enter your e-mail and password.
-                                </p>
-                            </div>
-
-                            <div className="flex flex-col gap-4">
-                                <Input label="Email" value={email} onChange={setEmail} placeholder="email" />
-                                <Input label="Lozinka" value={password} onChange={setPassword} placeholder="lozinka" type="password" />
-                                {err ? <p className="text-sm text-red-600">{err}</p> : null}
-                                <Button onClick={submit} disabled={loading}>
-                                    {loading ? "Logging in..." : "LOG IN"}
-                                </Button>
-                            </div>
+                        <div className="flex flex-col gap-4">
+                            <Input label="E-mail" value={email} onChange={setEmail} placeholder="test@example.com" />
+                            <Input label="Password" value={password} onChange={setPassword} placeholder="••••••••" type="password" />
+                            {err ? <p className="text-sm text-red-600">{err}</p> : null}
+                            <Button onClick={submit} disabled={loading}>
+                                {loading ? "Logging in..." : "LOG IN"}
+                            </Button>
                         </div>
-                    </section>
-                </div>
-            </main>
-        )
+                    </div>
+                </section>
+            </div>
+        </main>
+    )
 }

@@ -24,7 +24,7 @@ export default function Topbar() {
         </div>
 
         <div className="flex items-center gap-3">
-          <Button onClick={logout}>Logout</Button>
+          <Button onClick={logout}>Log out</Button>
         </div>
       </div>
     </div>

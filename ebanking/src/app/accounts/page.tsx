@@ -6,6 +6,7 @@ import AppShell from "@/components/AppShell"
 import AccountCarousel from "@/components/AccountCarousel"
 import Input from "@/components/Input"
 import Button from "@/components/Button"
+import SpendingChart from "@/components/SpendingChart"
 
 type ApiAccount = {
   accountId: string
@@ -30,7 +31,7 @@ type ApiTransaction = {
   receiverAccountId: string
 }
 
-const CATEGORIES = ["ALL","FOOD","FUEL","RENT","BILLS","SHOPPING","ENTERTAINMENT","HEALTH","TRANSPORT","OTHER"] as const
+const CATEGORIES = ["ALL", "FOOD", "FUEL", "RENT", "BILLS", "SHOPPING", "ENTERTAINMENT", "HEALTH", "TRANSPORT", "OTHER"] as const
 
 export default function AccountsPage() {
   const router = useRouter()
@@ -48,7 +49,7 @@ export default function AccountsPage() {
   const selectedAccount = accounts[selectedIndex]
 
   useEffect(() => {
-    ;(async () => {
+    ; (async () => {
       const me = await fetch("/api/auth/me")
       if (!me.ok) {
         router.push("/login")
@@ -103,27 +104,35 @@ export default function AccountsPage() {
         }}
       />
 
-      {/* Tabs */}
       <div className="mt-6 flex gap-2">
         <button
-          className={`rounded-lg px-4 py-2 text-sm font-medium ${tab === "details" ? "bg-slate-900 text-white" : "bg-white border"}`}
+          className={`rounded-lg px-4 py-2 text-sm font-medium transition
+      ${tab === "details"
+              ? "bg-slate-900 text-white"
+              : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900"
+            }`}
           onClick={() => setTab("details")}
         >
           Account details
         </button>
+
         <button
-          className={`rounded-lg px-4 py-2 text-sm font-medium ${tab === "history" ? "bg-slate-900 text-white" : "bg-white border"}`}
+          className={`rounded-lg px-4 py-2 text-sm font-medium transition
+      ${tab === "history"
+              ? "bg-slate-900 text-white"
+              : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900"
+            }`}
           onClick={() => setTab("history")}
         >
           Transaction history
         </button>
       </div>
 
-      {/* Details */}
+
       {tab === "details" && selectedAccount ? (
         <div className="mt-6 grid gap-6 lg:grid-cols-2">
           <div className="rounded-xl border bg-white p-5">
-            <h3 className="font-semibold">Account details</h3>
+            <h3 className="text-base font-semibold text-slate-900">Account details</h3>
             <div className="mt-4 text-sm text-slate-700">
               <p><span className="text-slate-500">Account number:</span> {selectedAccount.number}</p>
               <p className="mt-1"><span className="text-slate-500">Status:</span> {selectedAccount.status}</p>
@@ -132,26 +141,23 @@ export default function AccountsPage() {
             </div>
           </div>
 
-          <div className="rounded-xl border bg-white p-5">
-            <h3 className="font-semibold">Spending (graphs)</h3>
-            <p className="mt-2 text-sm text-slate-500">
-              Sledeći korak: ovde ubacujemo grafove (monthly/quarterly/yearly) preko `/api/analytics/spending?accountId=...`
-            </p>
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <SpendingChart accountId={selectedAccount.accountId} />
           </div>
+
         </div>
       ) : null}
 
-      {/* History */}
       {tab === "history" && selectedAccount ? (
         <div className="mt-6 rounded-xl border bg-white p-5">
-          <h3 className="font-semibold">Transaction history</h3>
+          <h3 className="text-base font-semibold text-slate-900">Transaction history</h3>
 
           <div className="mt-4 grid gap-3 lg:grid-cols-4">
-            <Input label="Search" value={q} onChange={setQ} placeholder="npr. Rucak" />
+            <Input label="Search" value={q} onChange={setQ} placeholder="" />
             <label className="flex flex-col gap-1">
               <span className="text-sm font-medium text-slate-700">Category</span>
               <select
-                className="rounded-lg border border-slate-200 px-3 py-2"
+                className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 focus:border-indigo-600 focus:outline-none"
                 value={category}
                 onChange={(e) => setCategory(e.target.value as any)}
               >
