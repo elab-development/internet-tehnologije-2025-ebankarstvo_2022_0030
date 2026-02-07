@@ -76,7 +76,7 @@ export default function LoginPage() {
                             <Input label="Password" value={password} onChange={setPassword} placeholder="••••••••" type="password" />
                             {err ? <p className="text-sm text-red-600">{err}</p> : null}
                             <Button onClick={submit} disabled={loading}>
-                                {loading ? "Logging in..." : "LOG IN"}
+                                {loading ? "Logging in..." : "Log in"}
                             </Button>
                         </div>
                     </div>

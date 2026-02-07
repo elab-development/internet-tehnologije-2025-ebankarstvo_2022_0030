@@ -1,73 +1,417 @@
 "use client"
 
+import AppShell from "@/components/AppShell"
 import Button from "@/components/Button"
 import Input from "@/components/Input"
-import { mockAccounts } from "@/mock/data"
-import { useState } from "react"
+import { useEffect, useMemo, useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
+import Image from "next/image"
 
-export default function TransferPage() {
-    const [fromId, setFromId] = useState(mockAccounts[0].id)
-    const [toId, setToId] = useState(mockAccounts[1].id)
+type ApiBalance = {
+    balanceId: string
+    currency: string
+    amount: string
+    accountId: string
+}
+
+type ApiAccount = {
+    accountId: string
+    number: string
+    accountType: string
+    status: string
+    openingDate: string
+    userId: string
+    balances: ApiBalance[]
+}
+
+type Me = {
+    userId: string
+    name: string
+    email: string
+    phone: string
+    address: string | null
+    birthDate: string
+    gender: string
+}
+
+const CATEGORIES = [
+    "FOOD",
+    "FUEL",
+    "RENT",
+    "BILLS",
+    "SHOPPING",
+    "ENTERTAINMENT",
+    "HEALTH",
+    "TRANSPORT",
+    "OTHER",
+] as const
+
+type Category = (typeof CATEGORIES)[number]
+
+function todayISO(): string {
+    const d = new Date()
+    const yyyy = d.getFullYear()
+    const mm = String(d.getMonth() + 1).padStart(2, "0")
+    const dd = String(d.getDate()).padStart(2, "0")
+    return `${yyyy}-${mm}-${dd}`
+}
+
+function to2(amount: string): string {
+    const n = Number(amount)
+    if (Number.isNaN(n)) return "0.00"
+    return n.toFixed(2)
+}
+
+function pickBalance(account: ApiAccount | undefined, currency: string): string {
+    if (!account) return "0.00"
+    const b = account.balances.find((x) => x.currency === currency)
+    return b?.amount ?? "0.00"
+}
+
+export default function TransfersPage() {
+    const router = useRouter()
+    const sp = useSearchParams()
+
+    const senderFromUrl = sp.get("sender") ?? ""
+
+    const [me, setMe] = useState<Me | null>(null)
+    const [accounts, setAccounts] = useState<ApiAccount[]>([])
+    const [senderAccountId, setSenderAccountId] = useState<string>("")
+
+    const [payerName, setPayerName] = useState("")
+    const [receiverName, setReceiverName] = useState("")
+    const [receiverAccountNumber, setReceiverAccountNumber] = useState("")
+    const [receiverAccountId, setReceiverAccountId] = useState<string>("")
+
+    const [currency, setCurrency] = useState("RSD")
     const [amount, setAmount] = useState("")
+    const [category, setCategory] = useState<Category>("FOOD")
+    const [description, setDescription] = useState("")
+    const [valueDate, setValueDate] = useState(todayISO())
+
+    const [lookupMsg, setLookupMsg] = useState("")
     const [err, setErr] = useState("")
-    const [okMsg, setOkMsg] = useState("")
+    const [loading, setLoading] = useState(false)
 
-    const submit = () => {
+    const senderAccount = useMemo(
+        () => accounts.find((a) => a.accountId === senderAccountId),
+        [accounts, senderAccountId]
+    )
+
+    const senderCurrencies = useMemo(() => {
+        const set = new Set<string>()
+            ; (senderAccount?.balances ?? []).forEach((b) => set.add(b.currency))
+        const list = [...set]
+        return list.length ? list : ["RSD"]
+    }, [senderAccount])
+
+    const senderAvailable = useMemo(() => {
+        return to2(pickBalance(senderAccount, currency))
+    }, [senderAccount, currency])
+
+    useEffect(() => {
+        ; (async () => {
+            setErr("")
+            const meRes = await fetch("/api/auth/me")
+            const meData = await meRes.json().catch(() => ({}))
+            if (!meRes.ok) {
+                router.push("/login")
+                router.refresh()
+                return
+            }
+            setMe(meData.user as Me)
+            setPayerName((meData.user as Me)?.name ?? "")
+
+            const aRes = await fetch("/api/accounts")
+            const aData = await aRes.json().catch(() => ({}))
+            if (!aRes.ok) {
+                setErr(aData?.error ?? "Failed to load accounts.")
+                return
+            }
+
+            const list: ApiAccount[] = aData.accounts ?? []
+            setAccounts(list)
+
+            const initialSender =
+                (senderFromUrl && list.some((a) => a.accountId === senderFromUrl) && senderFromUrl) ||
+                list[0]?.accountId ||
+                ""
+            setSenderAccountId(initialSender)
+
+            const acc = list.find((a) => a.accountId === initialSender)
+            const firstCur = acc?.balances?.[0]?.currency ?? "RSD"
+            setCurrency(firstCur)
+        })()
+    }, [])
+
+    const lookupReceiver = async () => {
+        setLookupMsg("")
+        setReceiverAccountId("")
+        const num = receiverAccountNumber.trim()
+        if (!num) {
+            setLookupMsg("Enter receiver account number.")
+            return
+        }
+
+        try {
+            const res = await fetch(`/api/accounts/lookup?number=${encodeURIComponent(num)}`)
+            const data = await res.json().catch(() => ({}))
+            if (!res.ok) {
+                setLookupMsg(data?.error ?? "No accounts found.")
+                return
+            }
+            setReceiverAccountId(data.accountId)
+            setLookupMsg(`Account found: ${data.number ?? num}`)
+        } catch {
+            setLookupMsg("Network error.")
+        }
+    }
+
+    const submit = async () => {
         setErr("")
-        setOkMsg("")
+        setLoading(true)
 
-        const value = Number(amount)
+        try {
+            if (!senderAccountId) {
+                setErr("Sender account not chosen.")
+                return
+            }
+            if (!receiverAccountId) {
+                setErr("Receiver account not found (Lookup).")
+                return
+            }
+            if (!amount || Number(amount) <= 0) {
+                setErr("Enter a valid amount.")
+                return
+            }
+            if (!valueDate) {
+                setErr("Enter date.")
+                return
+            }
 
-        if (!amount.trim())
-            return setErr("Enter an amount.")
-        if (Number.isNaN(value) || value <= 0)
-            return setErr("Amount must be positive.")
-        if (fromId === toId)
-            return setErr("Accounts must be different.")
+            const payload = {
+                senderAccountId,
+                receiverAccountId,
+                fromCurrency: currency,
+                toCurrency: currency,
+                amountFrom: to2(amount),
+                category,
+                description: description.trim() ? description.trim() : null,
+                date: valueDate,
+            }
 
-        setOkMsg("Transfer successful.")
+            const res = await fetch("/api/transfer", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+            })
+
+            const data = await res.json().catch(() => ({}))
+            if (!res.ok) {
+                setErr(data?.error ?? "Transfer failed.")
+                return
+            }
+
+            router.push("/")
+            router.refresh()
+        } catch {
+            setErr("Network error.")
+        } finally {
+            setLoading(false)
+        }
     }
 
     return (
-        <main className="mx-auto max-w-5xl px-4 py-8">
-            <h1 className="text-2xl font-bold">Fund transfer</h1>
+        <AppShell>
+            <div className="max-w-5xl">
+                <h1 className="text-xl font-semibold text-slate-900">Transfer funds</h1>
 
-            <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                <div className="flex flex-col gap-1">
-                    <label className="text-sm font-medium">From account:</label>
-                    <select
-                        value={fromId}
-                        onChange={(e) => setFromId(e.target.value)}
-                        className="rounded border border-gray-300 px-3 py-2"
-                    >
-                        {mockAccounts.map((a) => (
-                            <option key={a.id} value={a.id}>{a.name} ({a.currency})</option>
-                        ))}
-                    </select>
+                {err ? <p className="mt-3 text-sm text-red-600">{err}</p> : null}
+
+                <div className="mt-6">
+                    <div className="text-sm font-semibold text-slate-700">Debtor account</div>
+
+                    <div className="mt-3 flex flex-col gap-3 rounded-xl bg-slate-900 p-4 text-white shadow">
+                        <div className="flex items-center justify-between gap-4">
+                            <div className="flex items-center gap-3">
+                                <div className="relative h-9 w-9 overflow-hidden rounded bg-white/10">
+                                    <Image src="/icon.png" alt="icon" fill className="object-contain p-1" />
+                                </div>
+                                <div className="leading-tight">
+                                    <div className="text-xs text-white/70">{me?.name ?? "USER"}</div>
+                                    <div className="text-sm font-semibold">{senderAccount?.number ?? "—"}</div>
+                                </div>
+                            </div>
+
+                            <div className="text-right">
+                                <div className="text-xs text-white/70">Available balance</div>
+                                <div className="mt-1 flex items-center justify-end gap-2">
+                                    <div className="text-2xl font-bold">{senderAvailable}</div>
+                                    <select
+                                        className="rounded-md border border-white/20 bg-white/10 px-2 py-1 text-xs text-white outline-none"
+                                        value={currency}
+                                        onChange={(e) => setCurrency(e.target.value)}
+                                    >
+                                        {senderCurrencies.map((c) => (
+                                            <option key={c} value={c} className="text-slate-900">
+                                                {c}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="mt-2">
+                            <label className="text-xs font-semibold text-white/70">Change debtor account</label>
+                            <select
+                                className="mt-2 w-full rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm text-white outline-none"
+                                value={senderAccountId}
+                                onChange={(e) => {
+                                    const id = e.target.value
+                                    setSenderAccountId(id)
+                                    const acc = accounts.find((a) => a.accountId === id)
+                                    const firstCur = acc?.balances?.[0]?.currency ?? "RSD"
+                                    setCurrency(firstCur)
+                                }}
+                            >
+                                {accounts.map((a) => (
+                                    <option key={a.accountId} value={a.accountId} className="text-slate-900">
+                                        {a.number} • {a.accountType}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
                 </div>
 
-                <div className="flex flex-col gap-1">
-                    <label className="text-sm font-medium">To account:</label>
-                    <select
-                        value={toId}
-                        onChange={(e) => setToId(e.target.value)}
-                        className="rounded border border-gray-300 px-3 py-2"
-                    >
-                        {mockAccounts.map((a) => (
-                            <option key={a.id} value={a.id}>{a.name} ({a.currency})</option>
-                        ))}
-                    </select>
+                <div className="mt-6 rounded-xl border bg-white p-6">
+                    <div className="text-sm font-semibold text-slate-700">Payer</div>
+                    <div className="mt-3 grid gap-4 lg:grid-cols-2">
+                        <Input
+                            label="Name"
+                            value={payerName}
+                            onChange={setPayerName}
+                            placeholder="e.g. John Smith"
+                        />
+                        <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
+                            <div className="text-xs font-semibold text-slate-500">Debtor account</div>
+                            <div className="mt-1 font-medium text-slate-900">{senderAccount?.number ?? "—"}</div>
+                        </div>
+                    </div>
+
+                    <div className="mt-6 text-sm font-semibold text-slate-700">Creditor data</div>
+                    <div className="mt-3 grid gap-4 lg:grid-cols-2">
+                        <Input
+                            label="Creditor name"
+                            value={receiverName}
+                            onChange={setReceiverName}
+                            placeholder="e.g. Mike Afton"
+                        />
+
+                        <div className="flex flex-col gap-2">
+                            <Input
+                                label="Beneficiary account number"
+                                value={receiverAccountNumber}
+                                onChange={(v) => {
+                                    setReceiverAccountNumber(v)
+                                    setReceiverAccountId("")
+                                    setLookupMsg("")
+                                }}
+                                placeholder="e.g. CHK-0002"
+                            />
+                            <div className="flex items-center gap-3">
+                                <button
+                                    type="button"
+                                    onClick={lookupReceiver}
+                                    className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-900 hover:bg-slate-50"
+                                >
+                                    Lookup
+                                </button>
+                                <div className="text-sm text-slate-600">
+                                    {receiverAccountId ? (
+                                        <span className="font-semibold text-emerald-700">Receiver OK</span>
+                                    ) : (
+                                        <span className="text-slate-500">Receiver not selected</span>
+                                    )}
+                                    {lookupMsg ? <span className="ml-2 text-slate-500">• {lookupMsg}</span> : null}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="mt-6 text-sm font-semibold text-slate-700">Details</div>
+                    <div className="mt-3 grid gap-4 lg:grid-cols-3">
+                        <Input label="Amount" value={amount} onChange={setAmount} placeholder="1000.00" />
+
+                        <label className="flex flex-col gap-1">
+                            <span className="text-sm font-medium text-slate-700">Currency</span>
+                            <select
+                                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-600"
+                                value={currency}
+                                onChange={(e) => setCurrency(e.target.value)}
+                            >
+                                {senderCurrencies.map((c) => (
+                                    <option key={c} value={c}>
+                                        {c}
+                                    </option>
+                                ))}
+                            </select>
+                        </label>
+
+                        <label className="flex flex-col gap-1">
+                            <span className="text-sm font-medium text-slate-700">Category</span>
+                            <select
+                                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-600"
+                                value={category}
+                                onChange={(e) => setCategory(e.target.value as Category)}
+                            >
+                                {CATEGORIES.map((c) => (
+                                    <option key={c} value={c} className="text-slate-900">
+                                        {c}
+                                    </option>
+                                ))}
+                            </select>
+                        </label>
+                    </div>
+
+                    <div className="mt-6 text-sm font-semibold text-slate-700">Transfer details</div>
+                    <div className="mt-3">
+                        <Input
+                            label="Description"
+                            value={description}
+                            onChange={setDescription}
+                            placeholder=""
+                        />
+                    </div>
+
+                    <div className="mt-6 text-sm font-semibold text-slate-700">Value date</div>
+                    <div className="mt-3 grid gap-4 lg:grid-cols-2">
+                        <Input
+                            label="Date (YYYY-MM-DD)"
+                            value={valueDate}
+                            onChange={setValueDate}
+                            placeholder="2026-02-07"
+                        />
+
+                        <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
+                            <div className="text-xs font-semibold text-slate-500">Summary</div>
+                            <div className="mt-1 text-slate-900">
+                                {to2(amount || "0")} {currency} • {category}
+                            </div>
+                            <div className="mt-1 text-xs text-slate-500">
+                                from {senderAccount?.number ?? "—"} to {receiverAccountNumber || "—"}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="mt-8 flex justify-center">
+                        <Button onClick={submit} disabled={loading}>
+                            {loading ? "Processing..." : "Transfer"}
+                        </Button>
+                    </div>
                 </div>
-
-                <Input label="Amount" value={amount} onChange={setAmount} placeholder="e.g. 2500" />
-
-                <div className="flex items-end">
-                    <Button onClick={submit}>Execute transfer</Button>
-                </div>
-
-                {err ? <p className="mt-4 text-red-600">{err}</p> : null}
-                {okMsg ? <p className="mt-4 text-green-600">{okMsg}</p> : null}
             </div>
-        </main>
+        </AppShell>
     )
 }
