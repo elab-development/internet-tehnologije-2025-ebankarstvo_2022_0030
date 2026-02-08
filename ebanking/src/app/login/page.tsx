@@ -32,7 +32,14 @@ export default function LoginPage() {
                 return
             }
 
-            router.push("/")
+            const meRes = await fetch("/api/auth/me")
+            const meData = await meRes.json().catch(() => ({}))
+
+            if (meRes.ok && meData?.user?.role === "ADMIN") {
+                router.push("/admin/approvals")
+            } else {
+                router.push("/")
+            }
             router.refresh()
         } catch {
             setErr("Network error.")
@@ -69,6 +76,7 @@ export default function LoginPage() {
                             <p className="mt-1 text-sm text-slate-500">
                                 Enter your e-mail and password.
                             </p>
+
                         </div>
 
                         <div className="flex flex-col gap-4">
@@ -79,6 +87,10 @@ export default function LoginPage() {
                                 {loading ? "Logging in..." : "Log in"}
                             </Button>
                         </div>
+                        <p className="mt-2 text-sm text-slate-500">
+                            Don't have an account?{" "}
+                            <a href="/register" className="font-medium text-indigo-600 hover:underline"> Register here. </a>
+                        </p>
                     </div>
                 </section>
             </div>

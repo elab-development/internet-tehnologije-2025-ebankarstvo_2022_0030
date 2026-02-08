@@ -1,11 +1,16 @@
 import { db } from "@/db";
 import { accounts, balances } from "@/db/schema";
 import { COOKIE_NAME, verifyToken } from "@/lib/auth";
+import { requireUser } from "@/lib/requireUser";
 import { eq, inArray } from "drizzle-orm";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 export async function GET() {
+    const guard = await requireUser()
+    if (!guard.ok) 
+        return NextResponse.json({ error: guard.error }, { status: guard.status })
+
     const token = (await cookies()).get(COOKIE_NAME)?.value
     if (!token)
         return NextResponse.json({ error: "Unathourized." }, { status: 401 })

@@ -1,6 +1,7 @@
 import { db } from "@/db"
 import { accounts, transactions } from "@/db/schema"
 import { COOKIE_NAME, verifyToken } from "@/lib/auth"
+import { requireUser } from "@/lib/requireUser"
 import { and, eq, gte, inArray, lte, sql } from "drizzle-orm"
 import { cookies } from "next/headers"
 import { NextResponse } from "next/server"
@@ -16,6 +17,9 @@ function isDateStr(s: string): boolean {
 }
 
 export async function GET(req: Request) {
+    const guard = await requireUser()
+    if (!guard.ok) return NextResponse.json({ error: guard.error }, { status: guard.status })
+
     const token = (await cookies()).get(COOKIE_NAME)?.value
     if (!token)
         return NextResponse.json({ error: "Unauthorized." }, { status: 401 })

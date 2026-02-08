@@ -1,6 +1,7 @@
 import { db } from "@/db"
 import { accounts, balances, exchangeRates, transactions } from "@/db/schema"
 import { COOKIE_NAME, verifyToken } from "@/lib/auth"
+import { requireUser } from "@/lib/requireUser"
 import { and, eq } from "drizzle-orm"
 import { cookies } from "next/headers"
 import { NextResponse } from "next/server"
@@ -38,6 +39,10 @@ function isValidAmount(value: string): boolean {
 }
 
 export async function POST(req: Request) {
+    const guard = await requireUser()
+    if (!guard.ok)
+        return NextResponse.json({ error: guard.error }, { status: guard.status })
+
     const token = (await cookies()).get(COOKIE_NAME)?.value
     if (!token)
         return NextResponse.json({ error: "Unathorized." }, { status: 401 })

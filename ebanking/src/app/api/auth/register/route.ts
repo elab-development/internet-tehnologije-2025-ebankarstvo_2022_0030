@@ -25,11 +25,16 @@ export async function POST(req: Request) {
 
     try {
         const [created] = await db.insert(users).values({
-            name, email, salt,
+            name,
+            email,
+            salt,
             password: hashed,
-            birthDate: "2004-01-05",
-            gender: "MALE",
-            phone, address
+            birthDate,
+            gender,
+            phone,
+            address,
+            userStatus: "UNREGISTERED",
+            role: "USER",
         }).returning({ userId: users.userId, email: users.email })
 
         return NextResponse.json({ user: created }, { status: 201 })

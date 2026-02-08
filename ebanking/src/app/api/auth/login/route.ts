@@ -15,12 +15,20 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Missing fields." }, { status: 400 })
 
     const found = await db
-        .select({ userId: users.userId, email: users.email, passwordHash: users.password })
+        .select({ userId: users.userId, email: users.email, passwordHash: users.password, userStatus: users.userStatus })
         .from(users)
         .where(eq(users.email, email))
 
     if (found.length === 0)
         return NextResponse.json({ error: "Incorrect e-mail and/or password." }, { status: 401 })
+
+    if (found[0].userStatus === "UNREGISTERED") {
+        return NextResponse.json({ error: "Account waiting to be approved by admin." }, { status: 403 })
+    }
+    if (found[0].userStatus === "DISABLED") {
+        return NextResponse.json({ error: "Account disabled." }, { status: 403 })
+    }
+
 
     const ok = await bcrypt.compare(password, found[0].passwordHash)
     if (!ok)

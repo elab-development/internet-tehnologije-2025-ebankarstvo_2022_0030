@@ -16,7 +16,20 @@ async function main() {
         address: "Jove Ilica 154",
         email: "test@example.com",
         salt,
-        password: hashed
+        password: hashed,
+        role: "USER"
+    }).returning()
+
+    const [admin] = await db.insert(users).values({
+        name: "Admin",
+        birthDate: "1990-01-01",
+        gender: "MALE",
+        phone: "0600000000",
+        address: "Admin address",
+        email: "admin@example.com",
+        salt,
+        password: hashed,
+        role: "ADMIN",
     }).returning()
 
     const [checking] = await db.insert(accounts).values({
@@ -36,9 +49,9 @@ async function main() {
     }).returning()
 
     await db.insert(balances).values([
-        {accountId: checking.accountId, currency: "RSD", amount: "150000"},
-        {accountId: multicurrency.accountId, currency: "EUR", amount: "500"},
-        {accountId: multicurrency.accountId, currency: "RSD", amount: "250000"},
+        { accountId: checking.accountId, currency: "RSD", amount: "150000" },
+        { accountId: multicurrency.accountId, currency: "EUR", amount: "500" },
+        { accountId: multicurrency.accountId, currency: "RSD", amount: "250000" },
     ])
 
     console.log("Seed done.")

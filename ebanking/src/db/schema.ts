@@ -8,15 +8,17 @@ import {
     uniqueIndex,
 } from "drizzle-orm/pg-core"
 
-export const accountTypeEnum = pgEnum("account_type",
-    ["CHECKING", "MULTICURRENCY"])
+export const accountTypeEnum = pgEnum("account_type", ["CHECKING", "MULTICURRENCY"])
 
 export const statusEnum = pgEnum("status", ["ACTIVE", "INACTIVE"])
 
 export const genderEnum = pgEnum("gender", ["MALE", "FEMALE"])
 
-export const categoryEnum = pgEnum("category", [
-    "FOOD", "FUEL", "RENT", "BILLS", "SHOPPING", "ENTERTAINMENT", "HEALTH", "TRANSPORT", "OTHER"])
+export const categoryEnum = pgEnum("category", ["FOOD", "FUEL", "RENT", "BILLS", "SHOPPING", "ENTERTAINMENT", "HEALTH", "TRANSPORT", "OTHER"])
+
+export const roleEnum = pgEnum("role", ["USER", "ADMIN"])
+
+export const userStatusEnum = pgEnum("user_status", ["UNREGISTERED", "ENABLED", "DISABLED"])
 
 export const users = pgTable("users", {
     userId: uuid("user_id").primaryKey().defaultRandom(),
@@ -27,7 +29,9 @@ export const users = pgTable("users", {
     address: varchar("address", { length: 255 }),
     email: varchar("email", { length: 255 }).notNull().unique(),
     salt: varchar("salt", { length: 255 }).notNull(),
-    password: varchar("password", { length: 255 }).notNull()
+    password: varchar("password", { length: 255 }).notNull(),
+    role: roleEnum("role").notNull().default("USER"),
+    userStatus: userStatusEnum("user_status").notNull().default("UNREGISTERED"),
 })
 
 export const accounts = pgTable("accounts", {

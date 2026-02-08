@@ -36,6 +36,20 @@
       "when": 1770061703543,
       "tag": "0004_wooden_gunslinger",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1770492543220,
+      "tag": "0005_safe_black_knight",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1770502433860,
+      "tag": "0006_freezing_blob",
+      "breakpoints": true
     }
   ]
 }
