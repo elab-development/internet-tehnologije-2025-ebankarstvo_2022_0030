@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useMemo, useState } from "react"
 import Button from "./Button"
 
 type AccountCard = {
@@ -25,7 +26,20 @@ export default function AccountCarousel({
   if (accounts.length === 0) return null
 
   const a = accounts[selectedIndex]
-  const rsd = a.balances.find((b) => b.currency === "RSD") ?? a.balances[0]
+
+  const currencies = useMemo(() => {
+    const list = (a.balances ?? []).map((b) => b.currency)
+    return list.length ? list : ["RSD"]
+  }, [a.accountId, a.balances])
+
+  const [selectedCurrency, setSelectedCurrency] = useState<string>("RSD")
+
+  useEffect(() => {
+    const nextCur = currencies.includes("RSD") ? "RSD" : currencies[0]
+    setSelectedCurrency(nextCur)
+  }, [a.accountId, currencies])
+
+  const bal = a.balances.find((b) => b.currency === selectedCurrency) ?? a.balances[0]
 
   return (
     <div className="relative overflow-hidden rounded-2xl bg-slate-800 text-white">
@@ -47,7 +61,7 @@ export default function AccountCarousel({
             </div>
 
             <div className="text-right">
-              <div className="text-sm font-semibold">{/* owner name later */}ACCOUNT</div>
+              <div className="text-sm font-semibold">ACCOUNT</div>
               <div className="text-xs text-white/80">{a.number}</div>
               <div className="text-xs text-white/70">{a.status}</div>
             </div>
@@ -56,15 +70,29 @@ export default function AccountCarousel({
           <div className="mt-6 flex items-end justify-between gap-6">
             <div>
               <div className="text-sm text-white/85">Available balance</div>
-              <div className="mt-1 text-3xl font-bold">
-                {rsd ? rsd.amount : "0.00"}
-                <span className="ml-2 text-sm font-semibold text-white/80">{rsd?.currency ?? ""}</span>
+
+              <div className="mt-1 flex items-end gap-3">
+                <div className="text-3xl font-bold">{bal?.amount ?? "0.00"}</div>
+
+                {currencies.length > 1 ? (
+                  <select
+                    value={selectedCurrency}
+                    onChange={(e) => setSelectedCurrency(e.target.value)}
+                    className="mb-1 rounded-md border border-white/20 bg-white/10 px-2 py-1 text-xs font-semibold text-white outline-none"
+                  >
+                    {currencies.map((c) => (
+                      <option key={c} value={c} className="text-slate-900">
+                        {c}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <div className="mb-1 text-xs font-semibold text-white/80">{bal?.currency ?? ""}</div>
+                )}
               </div>
             </div>
 
-            <div className="text-right text-xs text-white/70">
-              {a.accountType}
-            </div>
+            <div className="text-right text-xs text-white/70">{a.accountType}</div>
           </div>
         </div>
 
