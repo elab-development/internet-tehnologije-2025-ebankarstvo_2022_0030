@@ -21,6 +21,7 @@ export default function AdminUsersPage() {
   const [rows, setRows] = useState<UserRow[]>([])
   const [loading, setLoading] = useState(true)
   const [err, setErr] = useState("")
+  const [meId, setMeId] = useState<string>("")
 
   const load = async () => {
     setErr("")
@@ -28,6 +29,9 @@ export default function AdminUsersPage() {
 
     const meRes = await fetch("/api/auth/me")
     const meData = await meRes.json().catch(() => ({}))
+
+    setMeId(meData?.user?.userId ?? "")
+
     if (!meRes.ok) {
       router.push("/login")
       router.refresh()
@@ -121,14 +125,17 @@ export default function AdminUsersPage() {
                   <td className="px-4 py-3">
                     <div className="flex justify-end">
                       <button
+                        disabled={u.userId === meId}
                         onClick={() => toggleStatus(u)}
                         className={[
                           "rounded-lg px-3 py-2 text-xs font-semibold text-white",
                           u.userStatus === "ENABLED" ? "bg-red-600 hover:bg-red-700" : "bg-emerald-600 hover:bg-emerald-700",
+                          u.userId === meId ? "opacity-50 cursor-not-allowed hover:opacity-50" : "",
                         ].join(" ")}
                       >
-                        {u.userStatus === "ENABLED" ? "Disable" : "Enable"}
+                        {u.userId === meId ? "You" : (u.userStatus === "ENABLED" ? "Disable" : "Enable")}
                       </button>
+
                     </div>
                   </td>
                 </tr>

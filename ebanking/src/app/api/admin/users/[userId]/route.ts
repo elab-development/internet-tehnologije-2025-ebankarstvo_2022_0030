@@ -31,7 +31,13 @@ export async function PATCH(
     return NextResponse.json({ error: "Invalid userStatus." }, { status: 400 })
   }
 
-  // 🔒 PROVERI TRENUTNI STATUS KORISNIKA
+  if (guard.userId === userId && body?.userStatus === "DISABLED") {
+    return NextResponse.json(
+      { error: "Admin cannot disable himself." },
+      { status: 400 }
+    )
+  }
+
   const existing = await db
     .select({ userStatus: users.userStatus })
     .from(users)

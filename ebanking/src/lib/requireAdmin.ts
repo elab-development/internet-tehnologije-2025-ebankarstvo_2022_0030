@@ -32,5 +32,5 @@ export async function requireAdmin() {
     return { ok: false as const, status: 403 as const, error: "Forbidden" }
   }
 
-  return { ok: true as const }
+  return { ok: true as const, userId: payload.userId }
 }
