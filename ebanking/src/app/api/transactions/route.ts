@@ -86,7 +86,7 @@ export async function GET(req: Request) {
         conds.push(
             or(
                 eq(transactions.senderAccountId, accountId),
-                eq(transactions.senderAccountId, accountId)
+                eq(transactions.receiverAccountId, accountId)
             )
         )
     }

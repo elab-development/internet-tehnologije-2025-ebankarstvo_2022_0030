@@ -160,8 +160,12 @@ export default function TransfersPage() {
                 setLookupMsg(data?.error ?? "No accounts found.")
                 return
             }
-            setReceiverAccountId(data.accountId)
-            setLookupMsg(`Account found: ${data.number ?? num}`)
+            if (!data.account) {
+                setLookupMsg("Account not found.")
+                return
+            }
+            setReceiverAccountId(data.account.accountId)
+            setLookupMsg(`Account found: ${data.account.number}`)
         } catch {
             setLookupMsg("Network error.")
         }
