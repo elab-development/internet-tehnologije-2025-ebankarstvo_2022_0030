@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server"
 import { db } from "@/db"
-import { accounts, users } from "@/db/schema"
+import { accounts, balances, users } from "@/db/schema"
 import { requireUser } from "@/lib/requireUser"
-import { eq } from "drizzle-orm"
+import { asc, eq } from "drizzle-orm"
 
 export async function GET(req: Request) {
   const guard = await requireUser()
@@ -35,5 +35,25 @@ export async function GET(req: Request) {
     return NextResponse.json({ account: null }, { status: 200 })
   }
 
-  return NextResponse.json({ account: rows[0] }, { status: 200 })
+  const acc = rows[0]
+
+  const bs = await db
+    .select({ currency: balances.currency })
+    .from(balances)
+    .where(eq(balances.accountId, acc.accountId))
+    .orderBy(asc(balances.balanceId))
+
+  const currencies = bs.map((b) => b.currency)
+  const defaultCurrency = currencies[0] ?? null
+
+  return NextResponse.json(
+    {
+      account: {
+        ...acc,
+        currencies,
+        defaultCurrency,
+      },
+    },
+    { status: 200 }
+  )
 }

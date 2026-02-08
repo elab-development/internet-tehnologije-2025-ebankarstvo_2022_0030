@@ -82,6 +82,8 @@ export default function TransfersPage() {
     const [receiverName, setReceiverName] = useState("")
     const [receiverAccountNumber, setReceiverAccountNumber] = useState("")
     const [receiverAccountId, setReceiverAccountId] = useState<string>("")
+    const [receiverCurrencies, setReceiverCurrencies] = useState<string[]>([])
+    const [receiverDefaultCurrency, setReceiverDefaultCurrency] = useState<string>("")
 
     const [currency, setCurrency] = useState("RSD")
     const [amount, setAmount] = useState("")
@@ -147,6 +149,9 @@ export default function TransfersPage() {
     const lookupReceiver = async () => {
         setLookupMsg("")
         setReceiverAccountId("")
+        setReceiverCurrencies([])
+        setReceiverDefaultCurrency("")
+
         const num = receiverAccountNumber.trim()
         if (!num) {
             setLookupMsg("Enter receiver account number.")
@@ -164,12 +169,26 @@ export default function TransfersPage() {
                 setLookupMsg("Account not found.")
                 return
             }
+
             setReceiverAccountId(data.account.accountId)
+            setReceiverCurrencies(Array.isArray(data.account.currencies) ? data.account.currencies : [])
+            setReceiverDefaultCurrency(typeof data.account.defaultCurrency === "string" ? data.account.defaultCurrency : "")
             setLookupMsg(`Account found: ${data.account.number}`)
         } catch {
             setLookupMsg("Network error.")
         }
     }
+
+    const conversionNote = useMemo(() => {
+        if (!receiverAccountId) return ""
+        if (!receiverCurrencies.length) return ""
+        if (!receiverDefaultCurrency) return ""
+
+        if (!receiverCurrencies.includes(currency)) {
+            return `Receiver does not have ${currency} – conversioin to ${receiverDefaultCurrency} will be executed according to today's course.`
+        }
+        return ""
+    }, [receiverAccountId, receiverCurrencies, receiverDefaultCurrency, currency])
 
     const submit = async () => {
         setErr("")
@@ -193,11 +212,13 @@ export default function TransfersPage() {
                 return
             }
 
+            const toCurrency = receiverCurrencies.includes(currency) ? currency : (receiverDefaultCurrency || currency)
+
             const payload = {
                 senderAccountId,
                 receiverAccountId,
                 fromCurrency: currency,
-                toCurrency: currency,
+                toCurrency,
                 amountFrom: to2(amount),
                 category,
                 description: description.trim() ? description.trim() : null,
@@ -292,12 +313,7 @@ export default function TransfersPage() {
                 <div className="mt-6 rounded-xl border bg-white p-6">
                     <div className="text-sm font-semibold text-slate-700">Payer</div>
                     <div className="mt-3 grid gap-4 lg:grid-cols-2">
-                        <Input
-                            label="Name"
-                            value={payerName}
-                            onChange={setPayerName}
-                            placeholder="e.g. John Smith"
-                        />
+                        <Input label="Name" value={payerName} onChange={setPayerName} placeholder="e.g. John Smith" />
                         <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
                             <div className="text-xs font-semibold text-slate-500">Debtor account</div>
                             <div className="mt-1 font-medium text-slate-900">{senderAccount?.number ?? "—"}</div>
@@ -320,10 +336,13 @@ export default function TransfersPage() {
                                 onChange={(v) => {
                                     setReceiverAccountNumber(v)
                                     setReceiverAccountId("")
+                                    setReceiverCurrencies([])
+                                    setReceiverDefaultCurrency("")
                                     setLookupMsg("")
                                 }}
                                 placeholder="e.g. CHK-0002"
                             />
+
                             <div className="flex items-center gap-3">
                                 <button
                                     type="button"
@@ -341,6 +360,12 @@ export default function TransfersPage() {
                                     {lookupMsg ? <span className="ml-2 text-slate-500">• {lookupMsg}</span> : null}
                                 </div>
                             </div>
+
+                            {conversionNote ? (
+                                <div className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+                                    {conversionNote}
+                                </div>
+                            ) : null}
                         </div>
                     </div>
 
@@ -381,22 +406,12 @@ export default function TransfersPage() {
 
                     <div className="mt-6 text-sm font-semibold text-slate-700">Transfer details</div>
                     <div className="mt-3">
-                        <Input
-                            label="Description"
-                            value={description}
-                            onChange={setDescription}
-                            placeholder=""
-                        />
+                        <Input label="Description" value={description} onChange={setDescription} placeholder="" />
                     </div>
 
                     <div className="mt-6 text-sm font-semibold text-slate-700">Value date</div>
                     <div className="mt-3 grid gap-4 lg:grid-cols-2">
-                        <Input
-                            label="Date (YYYY-MM-DD)"
-                            value={valueDate}
-                            onChange={setValueDate}
-                            placeholder="2026-02-07"
-                        />
+                        <Input label="Date (YYYY-MM-DD)" value={valueDate} onChange={setValueDate} placeholder="2026-02-07" />
 
                         <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
                             <div className="text-xs font-semibold text-slate-500">Summary</div>
