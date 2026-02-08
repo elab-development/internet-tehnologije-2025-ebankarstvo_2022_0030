@@ -15,7 +15,7 @@ const userItems = [
 ]
 
 const adminOnlyItems = [
-  { href: "/admin/approvals", label: "User approval" },
+  { href: "/admin/approvals", label: "Registration approvals" },
   { href: "/admin/users", label: "Users" },
 ]
 

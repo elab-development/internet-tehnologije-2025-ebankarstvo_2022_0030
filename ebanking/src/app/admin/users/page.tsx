@@ -88,7 +88,7 @@ export default function AdminUsersPage() {
   return (
     <AppShell>
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-slate-900">Admin · Users</h1>
+        <h1 className="text-2xl font-semibold text-slate-900">Users</h1>
 
         <button
           onClick={load}
@@ -118,11 +118,11 @@ export default function AdminUsersPage() {
             <tbody>
               {rows.map((u) => (
                 <tr key={u.userId} className="border-t border-slate-100">
-                  <td className="px-4 py-3">{u.name}</td>
-                  <td className="px-4 py-3">{u.email}</td>
-                  <td className="px-4 py-3">{u.role}</td>
-                  <td className="px-4 py-3">{u.userStatus}</td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3 text-slate-600">{u.name}</td>
+                  <td className="px-4 py-3 text-slate-600">{u.email}</td>
+                  <td className="px-4 py-3 text-slate-600">{u.role}</td>
+                  <td className="px-4 py-3 text-slate-600">{u.userStatus}</td>
+                  <td className="px-4 py-3 text-slate-600">
                     <div className="flex justify-end">
                       <button
                         disabled={u.userId === meId}
