@@ -44,18 +44,7 @@ export async function POST(req: Request) {
     if (!guard.ok)
         return NextResponse.json({ error: guard.error }, { status: guard.status })
 
-    const token = (await cookies()).get(COOKIE_NAME)?.value
-
-    if (!token)
-        return NextResponse.json({ error: "Unathorized." }, { status: 401 })
-
-    let payload
-
-    try {
-        payload = verifyToken(token)
-    } catch {
-        return NextResponse.json({ error: "Invalid token." }, { status: 401 })
-    }
+    let userId = guard.userId
 
     const body = (await req.json()) as Partial<TransferBody>
     const { senderAccountId, receiverAccountId, fromCurrency, toCurrency, amountFrom, category, description, } = body
@@ -80,7 +69,7 @@ export async function POST(req: Request) {
                 .where(
                     and(
                         eq(accounts.accountId, senderAccountId),
-                        eq(accounts.userId, payload.userId)
+                        eq(accounts.userId, userId)
                     )
                 )
 
@@ -96,7 +85,7 @@ export async function POST(req: Request) {
                         eq(balances.currency, fromCurrency)
                     )
                 )
-                
+
             if (senderBalance.length === 0)
                 return { error: "No balance for currency.", status: 400 }
 
@@ -112,25 +101,45 @@ export async function POST(req: Request) {
             if (fromCurrency !== toCurrency) {
                 const today = new Date().toISOString().slice(0, 10)
 
-                const rate = await tx
-                    .select()
-                    .from(exchangeRates)
-                    .where(
-                        and(
-                            eq(exchangeRates.rateDate, today),
-                            eq(exchangeRates.baseCurrency, "RSD"),
-                            eq(exchangeRates.quoteCurrency, fromCurrency === "RSD" ? toCurrency : fromCurrency)
-                        )
-                    )
+                const getRsdBaseRate = async (quoteCurrency: string) => {
+                    if (quoteCurrency === "RSD")
+                        return { exchangeRateId: null as string | null, rate: 1 }
 
-                if (rate.length === 0)
+                    const rows = await tx
+                        .select({ exchangeRateId: exchangeRates.exchangeRateId, rate: exchangeRates.rate })
+                        .from(exchangeRates)
+                        .where(
+                            and(
+                                eq(exchangeRates.rateDate, today),
+                                eq(exchangeRates.baseCurrency, "RSD"),
+                                eq(exchangeRates.quoteCurrency, quoteCurrency)
+                            )
+                        )
+
+                    if (rows.length === 0) return null
+
+                    return {
+                        exchangeRateId: rows[0].exchangeRateId,
+                        rate: parseFloat(rows[0].rate as string),
+                    }
+                }
+
+                const rateFrom = await getRsdBaseRate(fromCurrency)
+                const rateTo = await getRsdBaseRate(toCurrency)
+
+                if (!rateFrom || !rateTo)
                     return { error: "Exchange rate not available", status: 503 }
 
-                const r = parseFloat(rate[0].rate as string)
-
-                amountToNum = fromCurrency === "RSD" ? amountFromNum / r : amountFromNum * r
-
-                exchangeRateId = rate[0].exchangeRateId
+                if (fromCurrency === "RSD") {
+                    amountToNum = amountFromNum / rateTo.rate
+                    exchangeRateId = rateTo.exchangeRateId
+                } else if (toCurrency === "RSD") {
+                    amountToNum = amountFromNum * rateFrom.rate
+                    exchangeRateId = rateFrom.exchangeRateId
+                } else {
+                    amountToNum = (amountFromNum * rateFrom.rate) / rateTo.rate
+                    exchangeRateId = rateFrom.exchangeRateId
+                }
             }
 
             await tx

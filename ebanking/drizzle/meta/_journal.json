@@ -50,6 +50,13 @@
       "when": 1770502433860,
       "tag": "0006_freezing_blob",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1770643955686,
+      "tag": "0007_warm_hammerhead",
+      "breakpoints": true
     }
   ]
 }

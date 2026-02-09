@@ -96,6 +96,8 @@ export default function TransfersPage() {
     const [lookupMsg, setLookupMsg] = useState("")
     const [err, setErr] = useState("")
     const [loading, setLoading] = useState(false)
+    const [creditorLocked, setCreditorLocked] = useState(false)
+
 
     const senderAccount = useMemo(
         () => accounts.find((a) => a.accountId === senderAccountId),
@@ -153,6 +155,7 @@ export default function TransfersPage() {
         setReceiverAccountId("")
         setReceiverCurrencies([])
         setReceiverDefaultCurrency("")
+        setCreditorLocked(false)
 
         const num = receiverAccountNumber.trim()
         if (!num) {
@@ -166,17 +169,23 @@ export default function TransfersPage() {
 
             if (!res.ok) {
                 setLookupMsg(data?.error ?? "No accounts found.")
+                setReceiverName("")
+                setCreditorLocked(false)
                 return
             }
 
             if (!data.account) {
                 setLookupMsg("Account not found.")
+                setReceiverName("")
+                setCreditorLocked(false)
                 return
             }
 
             setReceiverAccountId(data.account.accountId)
             setReceiverCurrencies(Array.isArray(data.account.currencies) ? data.account.currencies : [])
             setReceiverDefaultCurrency(typeof data.account.defaultCurrency === "string" ? data.account.defaultCurrency : "")
+            setReceiverName((data.account.ownerName ?? data.account.name ?? "").toString())
+            setCreditorLocked(true)
             setLookupMsg(`Account found: ${data.account.number}`)
         } catch {
             setLookupMsg("Network error.")
@@ -320,7 +329,7 @@ export default function TransfersPage() {
                 <div className="mt-6 rounded-xl border bg-white p-6">
                     <div className="text-sm font-semibold text-slate-700">Payer</div>
                     <div className="mt-3 grid gap-4 lg:grid-cols-2">
-                        <Input label="Name" value={payerName} onChange={setPayerName} placeholder="e.g. John Smith" />
+                        <Input label="Name" value={payerName} onChange={setPayerName} disabled={true} />
                         <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
                             <div className="text-xs font-semibold text-slate-500">Debtor account</div>
                             <div className="mt-1 font-medium text-slate-900">{senderAccount?.number ?? "—"}</div>
@@ -333,7 +342,8 @@ export default function TransfersPage() {
                             label="Creditor name"
                             value={receiverName}
                             onChange={setReceiverName}
-                            placeholder="e.g. Mike Afton"
+                            placeholder="Look up an account to fill."
+                            disabled={true}
                         />
 
                         <div className="flex flex-col gap-2">
@@ -346,8 +356,10 @@ export default function TransfersPage() {
                                     setReceiverCurrencies([])
                                     setReceiverDefaultCurrency("")
                                     setLookupMsg("")
+                                    setReceiverName("")
+                                    setCreditorLocked(false)
                                 }}
-                                placeholder="e.g. CHK-0002"
+                                placeholder="XXXXXXXXXXXXXXXXXXXXXX"
                             />
 
                             <div className="flex items-center gap-3">

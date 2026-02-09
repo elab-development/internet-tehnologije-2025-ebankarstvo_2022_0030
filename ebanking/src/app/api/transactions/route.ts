@@ -37,18 +37,7 @@ export async function GET(req: Request) {
   if (!guard.ok)
     return NextResponse.json({ error: guard.error }, { status: guard.status })
 
-  const token = (await cookies()).get(COOKIE_NAME)?.value
-
-  if (!token)
-    return NextResponse.json({ error: "Unathorized." }, { status: 401 })
-
-  let payload: { userId: string }
-
-  try {
-    payload = verifyToken(token) as { userId: string }
-  } catch {
-    return NextResponse.json({ error: "Invalid token." }, { status: 401 })
-  }
+  let userId = guard.userId
 
   try {
     const url = new URL(req.url)
@@ -65,7 +54,7 @@ export async function GET(req: Request) {
     const userAccounts = await db
       .select({ accountId: accounts.accountId })
       .from(accounts)
-      .where(eq(accounts.userId, payload.userId))
+      .where(eq(accounts.userId, userId))
 
     const ids = userAccounts.map((a) => a.accountId)
 

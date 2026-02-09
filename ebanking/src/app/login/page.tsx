@@ -8,8 +8,8 @@ import { useState } from "react"
 
 export default function LoginPage() {
     const router = useRouter()
-    const [email, setEmail] = useState("test@example.com")
-    const [password, setPassword] = useState("12345678")
+    const [email, setEmail] = useState("")
+    const [password, setPassword] = useState("")
     const [err, setErr] = useState("")
     const [loading, setLoading] = useState(false)
 
@@ -75,7 +75,7 @@ export default function LoginPage() {
                         </div>
 
                         <div className="flex flex-col gap-4">
-                            <Input label="E-mail" value={email} onChange={setEmail} placeholder="test@example.com" />
+                            <Input label="E-mail" value={email} onChange={setEmail} placeholder="nikola.markovic@bank.rs" />
                             <Input label="Password" value={password} onChange={setPassword} placeholder="••••••••" type="password" />
                             {err ? <p className="text-sm text-red-600">{err}</p> : null}
                             <Button onClick={submit} disabled={loading}>

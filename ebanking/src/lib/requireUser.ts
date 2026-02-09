@@ -30,5 +30,5 @@ export async function requireUser() {
     if (rows[0].role !== "USER")
         return { ok: false as const, status: 403 as const, error: "Admins cannot perform transactions." }
 
-    return { ok: true as const }
+    return { ok: true as const, userId: payload.userId }
 }

@@ -12,20 +12,7 @@ export async function GET() {
     if (!guard.ok)
         return NextResponse.json({ error: guard.error }, { status: guard.status })
 
-    const token = (await cookies()).get(COOKIE_NAME)?.value
-
-    if (!token)
-        return NextResponse.json({ error: "Unathourized." }, { status: 401 })
-
-    let payload
-
-    try {
-        payload = verifyToken(token)
-    } catch {
-        return NextResponse.json({ error: "Invalid token." }, { status: 401 })
-    }
-
-    const userId = payload.userId
+    const userId = guard.userId
     const userAccounts = await db
         .select()
         .from(accounts)
