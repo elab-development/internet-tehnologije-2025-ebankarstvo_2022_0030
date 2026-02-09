@@ -9,7 +9,6 @@ import { useState } from "react"
 
 export default function RegisterPage() {
     const router = useRouter()
-
     const [name, setName] = useState("")
     const [email, setEmail] = useState("")
     const [phone, setPhone] = useState("")
@@ -18,7 +17,6 @@ export default function RegisterPage() {
     const [gender, setGender] = useState<"MALE" | "FEMALE">("MALE")
     const [password, setPassword] = useState("")
     const [confirmPassword, setConfirmPassword] = useState("")
-
     const [err, setErr] = useState("")
     const [success, setSuccess] = useState("")
     const [loading, setLoading] = useState(false)
@@ -89,9 +87,7 @@ export default function RegisterPage() {
                     <div className="w-full max-w-md rounded-2xl border border-white/10 bg-white p-7 shadow-xl">
                         <div className="mb-6">
                             <h2 className="mt-6 text-xl font-semibold text-slate-900">Register</h2>
-                            <p className="mt-1 text-sm text-slate-500">
-                                Fill in all the necessary data.
-                            </p>
+                            <p className="mt-1 text-sm text-slate-500">Fill in all the necessary data.</p>
                         </div>
 
                         <div className="flex flex-col gap-4">
@@ -140,8 +136,7 @@ export default function RegisterPage() {
                                 {loading ? "Registering..." : "Register"}
                             </Button>
                         </div>
-                        <p className="mt-2 text-sm text-slate-500">
-                            Already have an account?{" "}
+                        <p className="mt-2 text-sm text-slate-500">Already have an account?{" "}
                             <Link href="/login" className="font-medium text-indigo-600 hover:underline">Log in</Link>
                         </p>
                     </div>

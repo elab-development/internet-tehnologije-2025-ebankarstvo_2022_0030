@@ -40,7 +40,6 @@ export default function AccountsPage() {
   const [accounts, setAccounts] = useState<ApiAccount[]>([])
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [tab, setTab] = useState<"details" | "history">("details")
-
   const [q, setQ] = useState("")
   const [category, setCategory] = useState<(typeof CATEGORIES)[number]>("ALL")
   const [from, setFrom] = useState("")
@@ -54,7 +53,6 @@ export default function AccountsPage() {
     setFrom("")
     setTo("")
   }
-
 
   const selectedAccount = accounts[selectedIndex]
   const selectedCurrencies = (selectedAccount?.balances ?? []).map((b) => b.currency)
@@ -82,41 +80,50 @@ export default function AccountsPage() {
     const params = new URLSearchParams()
     params.set("accountId", selectedAccount.accountId)
     params.set("limit", "50")
-    if (q.trim()) params.set("q", q.trim())
-    if (category !== "ALL") params.set("category", category)
-    if (from) params.set("from", from)
-    if (to) params.set("to", to)
+
+    if (q.trim())
+      params.set("q", q.trim())
+
+    if (category !== "ALL")
+      params.set("category", category)
+
+    if (from)
+      params.set("from", from)
+
+    if (to)
+      params.set("to", to)
 
     const tRes = await fetch(`/api/transactions?${params.toString()}`)
     const tData = await tRes.json().catch(() => ({}))
-    if (!tRes.ok) return setErr(tData?.error ?? "Failed to load transactions.")
+
+    if (!tRes.ok)
+      return setErr(tData?.error ?? "Failed to load transactions.")
+
     setTxs(tData.transactions ?? [])
   }
 
   useEffect(() => {
-    if (tab !== "history") return
-    if (!selectedAccount) return
+    if (tab !== "history")
+      return
+    if (!selectedAccount)
+      return
 
-    const t = setTimeout(() => {
-      loadHistory()
-    }, q.trim() ? 350 : 0)
+    const t = setTimeout(() => { loadHistory() }, q.trim() ? 350 : 0)
 
     return () => clearTimeout(t)
   }, [tab, selectedAccount?.accountId, q, category, from, to])
-
 
   return (
     <AppShell>
       {err ? <p className="mb-4 text-red-600">{err}</p> : null}
 
-      <AccountCarousel
-        accounts={accounts.map((a) => ({
-          accountId: a.accountId,
-          number: a.number,
-          status: a.status,
-          accountType: a.accountType,
-          balances: a.balances.map((b) => ({ currency: b.currency, amount: b.amount })),
-        }))}
+      <AccountCarousel accounts={accounts.map((a) => ({
+        accountId: a.accountId,
+        number: a.number,
+        status: a.status,
+        accountType: a.accountType,
+        balances: a.balances.map((b) => ({ currency: b.currency, amount: b.amount }))
+      }))}
         selectedIndex={Math.min(selectedIndex, Math.max(accounts.length - 1, 0))}
         onChangeIndex={(i) => {
           setSelectedIndex(i)
@@ -126,25 +133,17 @@ export default function AccountsPage() {
 
       <div className="mt-6 flex gap-2">
         <button
-          className={`rounded-lg px-4 py-2 text-sm font-medium transition
-      ${tab === "details"
-              ? "bg-slate-900 text-white"
-              : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900"
-            }`}
+          className={`rounded-lg px-4 py-2 text-sm font-medium transition ${tab === "details" ?
+            "bg-slate-900 text-white" : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900"}`}
           onClick={() => setTab("details")}
-        >
-          Account details
+        >Account details
         </button>
 
         <button
-          className={`rounded-lg px-4 py-2 text-sm font-medium transition
-      ${tab === "history"
-              ? "bg-slate-900 text-white"
-              : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900"
-            }`}
+          className={`rounded-lg px-4 py-2 text-sm font-medium transition ${tab === "history" ?
+            "bg-slate-900 text-white" : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900"}`}
           onClick={() => setTab("history")}
-        >
-          Transaction history
+        >Transaction history
         </button>
       </div>
 
@@ -167,16 +166,13 @@ export default function AccountsPage() {
               currencies={selectedCurrencies}
               defaultCurrency={defaultCurrency}
             />
-
           </div>
-
         </div>
       ) : null}
 
       {tab === "history" && selectedAccount ? (
         <div className="mt-6 rounded-xl border bg-white p-5">
           <h3 className="text-base font-semibold text-slate-900">Transaction history</h3>
-
           <div className="mt-4 grid gap-3 lg:grid-cols-4">
             <Input label="Search" value={q} onChange={setQ} placeholder="" />
             <label className="flex flex-col gap-1">
@@ -185,8 +181,7 @@ export default function AccountsPage() {
                 className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 focus:border-indigo-600 focus:outline-none"
                 value={category}
                 onChange={(e) => setCategory(e.target.value as any)}
-              >
-                {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+              >{CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
             </label>
             <Input label="From" value={from} onChange={setFrom} type="date" />

@@ -8,7 +8,6 @@ import { useState } from "react"
 
 export default function LoginPage() {
     const router = useRouter()
-
     const [email, setEmail] = useState("test@example.com")
     const [password, setPassword] = useState("12345678")
     const [err, setErr] = useState("")
@@ -40,6 +39,7 @@ export default function LoginPage() {
             } else {
                 router.push("/")
             }
+
             router.refresh()
         } catch {
             setErr("Network error.")
@@ -70,13 +70,8 @@ export default function LoginPage() {
                 <section className="flex items-center lg:justify-end">
                     <div className="w-full max-w-md rounded-2xl border border-white/10 bg-white p-7 shadow-xl">
                         <div className="mb-6">
-                            <h2 className="mt-6 text-xl font-semibold text-slate-900">
-                                Log in
-                            </h2>
-                            <p className="mt-1 text-sm text-slate-500">
-                                Enter your e-mail and password.
-                            </p>
-
+                            <h2 className="mt-6 text-xl font-semibold text-slate-900">Log in</h2>
+                            <p className="mt-1 text-sm text-slate-500">Enter your e-mail and password.</p>
                         </div>
 
                         <div className="flex flex-col gap-4">
@@ -87,8 +82,7 @@ export default function LoginPage() {
                                 {loading ? "Logging in..." : "Log in"}
                             </Button>
                         </div>
-                        <p className="mt-2 text-sm text-slate-500">
-                            Don't have an account?{" "}
+                        <p className="mt-2 text-sm text-slate-500">Don't have an account?{" "}
                             <a href="/register" className="font-medium text-indigo-600 hover:underline"> Register here. </a>
                         </p>
                     </div>

@@ -25,16 +25,13 @@ export default function AccountCarousel({
 
   const safeIndex = len === 0 ? 0 : Math.min(Math.max(selectedIndex, 0), len - 1)
 
-  const a: AccountCard =
-    len === 0
-      ? {
-        accountId: "",
-        number: "",
-        status: "",
-        accountType: "",
-        balances: [{ currency: "RSD", amount: "0.00" }],
-      }
-      : safeAccounts[safeIndex]
+  const a: AccountCard = len === 0 ? {
+    accountId: "",
+    number: "",
+    status: "",
+    accountType: "",
+    balances: [{ currency: "RSD", amount: "0.00" }],
+  } : safeAccounts[safeIndex]
 
   const currencies = useMemo(() => {
     const list = (a.balances ?? []).map((b) => b.currency)
@@ -51,12 +48,14 @@ export default function AccountCarousel({
   const bal = a.balances.find((b) => b.currency === selectedCurrency) ?? a.balances[0]
 
   const prev = () => {
-    if (len < 2) return
+    if (len < 2) 
+      return
     onChangeIndex((safeIndex - 1 + len) % len)
   }
 
   const next = () => {
-    if (len < 2) return
+    if (len < 2) 
+      return
     onChangeIndex((safeIndex + 1) % len)
   }
 

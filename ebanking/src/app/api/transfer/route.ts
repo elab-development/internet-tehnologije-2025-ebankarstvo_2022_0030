@@ -40,14 +40,17 @@ function isValidAmount(value: string): boolean {
 
 export async function POST(req: Request) {
     const guard = await requireUser()
+
     if (!guard.ok)
         return NextResponse.json({ error: guard.error }, { status: guard.status })
 
     const token = (await cookies()).get(COOKIE_NAME)?.value
+
     if (!token)
         return NextResponse.json({ error: "Unathorized." }, { status: 401 })
 
     let payload
+
     try {
         payload = verifyToken(token)
     } catch {
@@ -66,9 +69,8 @@ export async function POST(req: Request) {
     if (senderAccountId === receiverAccountId)
         return NextResponse.json({ error: "Sender and receiver must be different." }, { status: 400 })
 
-    if (!category || typeof category !== "string" || !isCategory(category)) {
+    if (!category || typeof category !== "string" || !isCategory(category))
         return NextResponse.json({ error: "Invalid category." }, { status: 400 });
-    }
 
     try {
         const result = await db.transaction(async (tx) => {
@@ -81,6 +83,7 @@ export async function POST(req: Request) {
                         eq(accounts.userId, payload.userId)
                     )
                 )
+
             if (senderAccount.length === 0)
                 return { error: "Sender account not owned by user.", status: 400 }
 
@@ -93,6 +96,7 @@ export async function POST(req: Request) {
                         eq(balances.currency, fromCurrency)
                     )
                 )
+                
             if (senderBalance.length === 0)
                 return { error: "No balance for currency.", status: 400 }
 

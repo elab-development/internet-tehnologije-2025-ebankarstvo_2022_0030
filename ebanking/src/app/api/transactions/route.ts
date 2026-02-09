@@ -9,30 +9,41 @@ import { NextResponse } from "next/server"
 
 function clampInt(v: string | null, def: number, min: number, max: number) {
   const n = v ? parseInt(v, 10) : NaN
-  if (Number.isNaN(n)) return def
+
+  if (Number.isNaN(n))
+    return def
+
   return Math.min(Math.max(n, min), max)
 }
 
 function parseMoney(v: string | null): string | undefined {
-  if (!v) return
+  if (!v)
+    return
+
   const s = v.trim()
-  if (!s) return
-  if (!/^\d+(\.\d{1,2})?$/.test(s)) return
+
+  if (!s)
+    return
+
+  if (!/^\d+(\.\d{1,2})?$/.test(s))
+    return
+
   return s
 }
 
 export async function GET(req: Request) {
   const guard = await requireUser()
-  if (!guard.ok) {
+
+  if (!guard.ok)
     return NextResponse.json({ error: guard.error }, { status: guard.status })
-  }
 
   const token = (await cookies()).get(COOKIE_NAME)?.value
-  if (!token) {
+
+  if (!token)
     return NextResponse.json({ error: "Unathorized." }, { status: 401 })
-  }
 
   let payload: { userId: string }
+
   try {
     payload = verifyToken(token) as { userId: string }
   } catch {
@@ -41,12 +52,9 @@ export async function GET(req: Request) {
 
   try {
     const url = new URL(req.url)
-
     const accountIdRaw = url.searchParams.get("accountId")
     const accountId = accountIdRaw && accountIdRaw.trim() ? accountIdRaw.trim() : undefined
-
     const limit = clampInt(url.searchParams.get("limit"), 50, 1, 200)
-
     const q = url.searchParams.get("q")?.trim() || undefined
     const category = url.searchParams.get("category")?.trim() || undefined
     const from = url.searchParams.get("from")?.trim() || undefined
@@ -60,31 +68,36 @@ export async function GET(req: Request) {
       .where(eq(accounts.userId, payload.userId))
 
     const ids = userAccounts.map((a) => a.accountId)
-    if (ids.length === 0) {
+
+    if (ids.length === 0)
       return NextResponse.json({ transactions: [] }, { status: 200 })
-    }
 
     const conds: any[] = [
-      or(inArray(transactions.senderAccountId, ids), inArray(transactions.receiverAccountId, ids)),
+      or(
+        inArray(transactions.senderAccountId, ids),
+        inArray(transactions.receiverAccountId, ids)),
     ]
 
-    if (accountId) {
+    if (accountId)
       conds.push(or(eq(transactions.senderAccountId, accountId), eq(transactions.receiverAccountId, accountId)))
-    }
 
-    if (q) {
+    if (q)
       conds.push(ilike(transactions.description, `%${q}%`))
-    }
 
-    if (category && category !== "ALL") {
+    if (category && category !== "ALL")
       conds.push(eq(transactions.category as any, category as any))
-    }
 
-    if (from) conds.push(gte(transactions.date, from))
-    if (to) conds.push(lte(transactions.date, to))
+    if (from)
+      conds.push(gte(transactions.date, from))
 
-    if (minAmount) conds.push(gte(transactions.amountFrom, sql`${minAmount}`))
-    if (maxAmount) conds.push(lte(transactions.amountFrom, sql`${maxAmount}`))
+    if (to)
+      conds.push(lte(transactions.date, to))
+
+    if (minAmount)
+      conds.push(gte(transactions.amountFrom, sql`${minAmount}`))
+
+    if (maxAmount)
+      conds.push(lte(transactions.amountFrom, sql`${maxAmount}`))
 
     const senderAcc = alias(accounts, "senderAcc")
     const receiverAcc = alias(accounts, "receiverAcc")
@@ -110,7 +123,6 @@ export async function GET(req: Request) {
       .where(and(...conds))
       .orderBy(desc(transactions.date))
       .limit(limit)
-
 
     return NextResponse.json({ transactions: rows }, { status: 200 })
   } catch (e: any) {

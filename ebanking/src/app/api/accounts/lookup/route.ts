@@ -6,16 +6,15 @@ import { asc, eq } from "drizzle-orm"
 
 export async function GET(req: Request) {
   const guard = await requireUser()
-  if (!guard.ok) {
+
+  if (!guard.ok)
     return NextResponse.json({ error: guard.error }, { status: guard.status })
-  }
 
   const url = new URL(req.url)
   const number = (url.searchParams.get("number") ?? "").trim()
 
-  if (!number) {
+  if (!number)
     return NextResponse.json({ error: "Number is required." }, { status: 400 })
-  }
 
   const rows = await db
     .select({

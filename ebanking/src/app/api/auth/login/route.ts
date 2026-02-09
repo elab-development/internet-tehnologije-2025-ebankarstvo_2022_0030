@@ -7,10 +7,12 @@ import { COOKIE_NAME, signToken } from "@/lib/auth"
 
 export async function POST(req: Request) {
     const body = await req.json().catch(() => null)
+
     if (!body)
         return NextResponse.json({ error: "Invalid JSON." }, { status: 400 })
 
     const { email, password } = body as { email?: string, password?: string }
+
     if (!email || !password)
         return NextResponse.json({ error: "Missing fields." }, { status: 400 })
 
@@ -22,18 +24,16 @@ export async function POST(req: Request) {
     if (found.length === 0)
         return NextResponse.json({ error: "Incorrect e-mail and/or password." }, { status: 401 })
 
-    if (found[0].userStatus === "UNREGISTERED") {
+    if (found[0].userStatus === "UNREGISTERED") 
         return NextResponse.json({ error: "Account waiting to be approved by admin." }, { status: 403 })
-    }
-    if (found[0].userStatus === "DISABLED") {
-        return NextResponse.json({ error: "Account disabled." }, { status: 403 })
-    }
 
+    if (found[0].userStatus === "DISABLED") 
+        return NextResponse.json({ error: "Account disabled." }, { status: 403 })
 
     const ok = await bcrypt.compare(password, found[0].passwordHash)
+
     if (!ok)
         return NextResponse.json({ error: "Incorrect e-mail and/or password." }, { status: 401 })
-
 
     const token = signToken({ userId: found[0].userId, email: found[0].email })
     const res = NextResponse.json({ ok: true })

@@ -25,11 +25,13 @@ export default function AdminApprovalsPage() {
 
         const meRes = await fetch("/api/auth/me")
         const meData = await meRes.json().catch(() => ({}))
+
         if (!meRes.ok) {
             router.push("/login")
             router.refresh()
             return
         }
+
         if (meData?.user?.role !== "ADMIN") {
             router.push("/")
             router.refresh()
@@ -38,6 +40,7 @@ export default function AdminApprovalsPage() {
 
         const res = await fetch("/api/admin/users")
         const data = await res.json().catch(() => ({}))
+
         if (!res.ok) {
             setErr(data?.error ?? "Failed to load users.")
             setLoading(false)
@@ -69,18 +72,14 @@ export default function AdminApprovalsPage() {
         <AppShell>
             <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-semibold text-slate-900">Registration approvals</h1>
-
                 <button
                     onClick={load}
                     className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-                >
-                    Refresh
+                >Refresh
                 </button>
             </div>
 
-            <p className="mt-2 text-sm text-slate-600">
-                Registered users waiting for approval.
-            </p>
+            <p className="mt-2 text-sm text-slate-600">Registered users waiting for approval.</p>
 
             {err ? <p className="mt-3 text-sm text-red-600">{err}</p> : null}
 
@@ -111,8 +110,7 @@ export default function AdminApprovalsPage() {
                                             <button
                                                 onClick={() => approve(u)}
                                                 className="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white hover:bg-emerald-700"
-                                            >
-                                                Approve
+                                            >Approve
                                             </button>
                                         </div>
                                     </td>

@@ -51,7 +51,10 @@ export default function HomePage() {
 
       const aRes = await fetch("/api/accounts")
       const aData = await aRes.json().catch(() => ({}))
-      if (!aRes.ok) return setErr(aData?.error ?? "Failed to load accounts.")
+
+      if (!aRes.ok)
+        return setErr(aData?.error ?? "Failed to load accounts.")
+
       setAccounts(aData.accounts ?? [])
     })()
   }, [router])
@@ -61,7 +64,10 @@ export default function HomePage() {
       ; (async () => {
         const tRes = await fetch(`/api/transactions?limit=10&accountId=${selectedAccount.accountId}`)
         const tData = await tRes.json().catch(() => ({}))
-        if (!tRes.ok) return setErr(tData?.error ?? "Failed to load transactions.")
+        
+        if (!tRes.ok)
+          return setErr(tData?.error ?? "Failed to load transactions.")
+
         setTxs(tData.transactions ?? [])
       })()
   }, [selectedAccount?.accountId])

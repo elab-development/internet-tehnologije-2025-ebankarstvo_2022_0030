@@ -59,39 +59,40 @@ function todayISO(): string {
 
 function to2(amount: string): string {
     const n = Number(amount)
-    if (Number.isNaN(n)) return "0.00"
+
+    if (Number.isNaN(n))
+        return "0.00"
+
     return n.toFixed(2)
 }
 
 function pickBalance(account: ApiAccount | undefined, currency: string): string {
-    if (!account) return "0.00"
+    if (!account)
+        return "0.00"
+
     const b = account.balances.find((x) => x.currency === currency)
+
     return b?.amount ?? "0.00"
 }
 
 export default function TransfersPage() {
     const router = useRouter()
     const sp = useSearchParams()
-
     const senderFromUrl = sp.get("sender") ?? ""
-
     const [me, setMe] = useState<Me | null>(null)
     const [accounts, setAccounts] = useState<ApiAccount[]>([])
     const [senderAccountId, setSenderAccountId] = useState<string>("")
-
     const [payerName, setPayerName] = useState("")
     const [receiverName, setReceiverName] = useState("")
     const [receiverAccountNumber, setReceiverAccountNumber] = useState("")
     const [receiverAccountId, setReceiverAccountId] = useState<string>("")
     const [receiverCurrencies, setReceiverCurrencies] = useState<string[]>([])
     const [receiverDefaultCurrency, setReceiverDefaultCurrency] = useState<string>("")
-
     const [currency, setCurrency] = useState("RSD")
     const [amount, setAmount] = useState("")
     const [category, setCategory] = useState<Category>("FOOD")
     const [description, setDescription] = useState("")
     const [valueDate] = useState(todayISO())
-
     const [lookupMsg, setLookupMsg] = useState("")
     const [err, setErr] = useState("")
     const [loading, setLoading] = useState(false)
@@ -162,10 +163,12 @@ export default function TransfersPage() {
         try {
             const res = await fetch(`/api/accounts/lookup?number=${encodeURIComponent(num)}`)
             const data = await res.json().catch(() => ({}))
+
             if (!res.ok) {
                 setLookupMsg(data?.error ?? "No accounts found.")
                 return
             }
+
             if (!data.account) {
                 setLookupMsg("Account not found.")
                 return
@@ -181,13 +184,18 @@ export default function TransfersPage() {
     }
 
     const conversionNote = useMemo(() => {
-        if (!receiverAccountId) return ""
-        if (!receiverCurrencies.length) return ""
-        if (!receiverDefaultCurrency) return ""
+        if (!receiverAccountId)
+            return ""
 
-        if (!receiverCurrencies.includes(currency)) {
-            return `Receiver does not have ${currency} – conversioin to ${receiverDefaultCurrency} will be executed according to today's course.`
-        }
+        if (!receiverCurrencies.length)
+            return ""
+
+        if (!receiverDefaultCurrency)
+            return ""
+
+        if (!receiverCurrencies.includes(currency))
+            return `Receiver does not have ${currency} - conversioin to ${receiverDefaultCurrency} will be executed according to today's course.`
+
         return ""
     }, [receiverAccountId, receiverCurrencies, receiverDefaultCurrency, currency])
 
@@ -200,14 +208,17 @@ export default function TransfersPage() {
                 setErr("Sender account not chosen.")
                 return
             }
+
             if (!receiverAccountId) {
                 setErr("Receiver account not found (Lookup).")
                 return
             }
+
             if (!amount || Number(amount) <= 0) {
                 setErr("Enter a valid amount.")
                 return
             }
+
             if (!valueDate) {
                 setErr("Enter date.")
                 return
@@ -251,9 +262,7 @@ export default function TransfersPage() {
         <AppShell>
             <div className="max-w-5xl">
                 <h1 className="text-xl font-semibold text-slate-900">Transfer funds</h1>
-
                 {err ? <p className="mt-3 text-sm text-red-600">{err}</p> : null}
-
                 <div className="mt-6">
                     <div className="text-sm font-semibold text-slate-700">Debtor account</div>
 
@@ -277,12 +286,9 @@ export default function TransfersPage() {
                                         className="rounded-md border border-white/20 bg-white/10 px-2 py-1 text-xs text-white outline-none"
                                         value={currency}
                                         onChange={(e) => setCurrency(e.target.value)}
-                                    >
-                                        {senderCurrencies.map((c) => (
-                                            <option key={c} value={c} className="text-slate-900">
-                                                {c}
-                                            </option>
-                                        ))}
+                                    > {senderCurrencies.map((c) => (
+                                        <option key={c} value={c} className="text-slate-900">{c}</option>
+                                    ))}
                                     </select>
                                 </div>
                             </div>
@@ -349,8 +355,7 @@ export default function TransfersPage() {
                                     type="button"
                                     onClick={lookupReceiver}
                                     className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-900 hover:bg-slate-50"
-                                >
-                                    Lookup
+                                >Lookup
                                 </button>
                                 <div className="text-sm text-slate-600">
                                     {receiverAccountId ? (
@@ -380,12 +385,11 @@ export default function TransfersPage() {
                                 className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-600"
                                 value={currency}
                                 onChange={(e) => setCurrency(e.target.value)}
-                            >
-                                {senderCurrencies.map((c) => (
-                                    <option key={c} value={c}>
-                                        {c}
-                                    </option>
-                                ))}
+                            >{senderCurrencies.map((c) => (
+                                <option key={c} value={c}>
+                                    {c}
+                                </option>
+                            ))}
                             </select>
                         </label>
 

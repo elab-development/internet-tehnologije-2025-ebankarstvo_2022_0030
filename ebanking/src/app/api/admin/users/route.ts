@@ -5,9 +5,9 @@ import { requireAdmin } from "@/lib/requireAdmin"
 
 export async function GET() {
   const guard = await requireAdmin()
-  if (!guard.ok) {
+
+  if (!guard.ok) 
     return NextResponse.json({ error: guard.error }, { status: guard.status })
-  }
 
   const rows = await db
     .select({

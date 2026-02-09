@@ -5,6 +5,7 @@ import { users } from "@/db/schema"
 
 export async function POST(req: Request) {
     const body = await req.json().catch(() => null)
+    
     if (!body)
         return NextResponse.json({ error: "Ivalid JSON" }, { status: 400 })
 

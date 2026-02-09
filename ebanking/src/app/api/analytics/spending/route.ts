@@ -18,13 +18,17 @@ function isDateStr(s: string): boolean {
 
 export async function GET(req: Request) {
     const guard = await requireUser()
-    if (!guard.ok) return NextResponse.json({ error: guard.error }, { status: guard.status })
+
+    if (!guard.ok) 
+        return NextResponse.json({ error: guard.error }, { status: guard.status })
 
     const token = (await cookies()).get(COOKIE_NAME)?.value
+
     if (!token)
         return NextResponse.json({ error: "Unauthorized." }, { status: 401 })
 
     let payload: { userId: string }
+
     try {
         payload = verifyToken(token)
     } catch {
@@ -79,6 +83,7 @@ export async function GET(req: Request) {
     conds.push(eq(transactions.fromCurrency, currency))
 
     let labelSql
+    
     if (period === "monthly") {
         labelSql = sql<string>`to_char(${transactions.date}, 'YYYY-MM')`
     } else if (period === "yearly") {

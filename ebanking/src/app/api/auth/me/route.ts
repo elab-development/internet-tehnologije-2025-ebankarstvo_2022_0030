@@ -12,6 +12,7 @@ export async function GET() {
         return NextResponse.json({ error: "Unauthorized." }, { status: 401 })
 
     let payload: { userId: string; email: string }
+
     try {
         payload = verifyToken(token)
     } catch {
@@ -33,9 +34,8 @@ export async function GET() {
         .from(users)
         .where(eq(users.userId, payload.userId))
 
-    if (found.length === 0) {
+    if (found.length === 0) 
         return NextResponse.json({ error: "User not found." }, { status: 401 })
-    }
 
     return NextResponse.json({ user: found[0] }, { status: 200 })
 }

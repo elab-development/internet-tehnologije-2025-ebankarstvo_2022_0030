@@ -37,6 +37,7 @@ export default function AdminUsersPage() {
       router.refresh()
       return
     }
+
     if (meData?.user?.role !== "ADMIN") {
       router.push("/")
       router.refresh()
@@ -45,6 +46,7 @@ export default function AdminUsersPage() {
 
     const res = await fetch("/api/admin/users")
     const data = await res.json().catch(() => ({}))
+
     if (!res.ok) {
       setErr(data?.error ?? "Failed to load users.")
       setLoading(false)
@@ -76,7 +78,9 @@ export default function AdminUsersPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userStatus: next }),
     })
+
     const data = await res.json().catch(() => ({}))
+
     if (!res.ok) {
       setErr(data?.error ?? "Failed to update userStatus.")
       return
@@ -89,12 +93,10 @@ export default function AdminUsersPage() {
     <AppShell>
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold text-slate-900">Users</h1>
-
         <button
           onClick={load}
           className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-        >
-          Refresh
+        >Refresh
         </button>
       </div>
 
@@ -132,10 +134,8 @@ export default function AdminUsersPage() {
                           u.userStatus === "ENABLED" ? "bg-red-600 hover:bg-red-700" : "bg-emerald-600 hover:bg-emerald-700",
                           u.userId === meId ? "opacity-50 cursor-not-allowed hover:opacity-50" : "",
                         ].join(" ")}
-                      >
-                        {u.userId === meId ? "You" : (u.userStatus === "ENABLED" ? "Disable" : "Enable")}
+                      >{u.userId === meId ? "You" : (u.userStatus === "ENABLED" ? "Disable" : "Enable")}
                       </button>
-
                     </div>
                   </td>
                 </tr>
@@ -143,9 +143,7 @@ export default function AdminUsersPage() {
 
               {rows.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-6 text-slate-500">
-                    No users.
-                  </td>
+                  <td colSpan={5} className="px-4 py-6 text-slate-500">No users.</td>
                 </tr>
               ) : null}
             </tbody>

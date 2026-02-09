@@ -15,24 +15,24 @@ type KursRateTodayResponse = {
 function parseCurrenciesList(): string[] {
     const raw = process.env.RATES_CURRENCIES ?? "EUR,USD"
     return raw.split(",").map((s) => s.trim().toUpperCase()).filter(Boolean)
-
 }
 
 export async function GET(req: Request) {
     try {
         const auth = req.headers.get("authorization")
+
         if (auth !== `Bearer ${process.env.CRON_SECRET}`)
             return NextResponse.json({ error: "Unauthorized." }, { status: 401 })
 
-        const res = await fetch("https://kurs.resenje.org/api/v1/rates/today", {
-            cache: "no-store"
-        })
+        const res = await fetch("https://kurs.resenje.org/api/v1/rates/today", { cache: "no-store" })
+
         if (!res.ok)
             return NextResponse.json({ error: "Failed to fetch rates.", status: res.status }, { status: 502 })
 
         const data = (await res.json()) as KursRateTodayResponse
         const wanted = new Set(parseCurrenciesList())
         const picked = data.rates.filter((r) => wanted.has(r.code))
+        
         if (picked.length === 0)
             return NextResponse.json({ error: "No matching currencies found in response.", wanted: [...wanted] }, { status: 500 })
 
