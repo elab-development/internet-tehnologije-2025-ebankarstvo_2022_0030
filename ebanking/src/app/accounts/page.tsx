@@ -7,6 +7,7 @@ import AccountCarousel from "@/components/AccountCarousel"
 import Input from "@/components/Input"
 import Button from "@/components/Button"
 import SpendingChart from "@/components/SpendingChart"
+import { formatDateSR } from "@/lib/date"
 
 type ApiAccount = {
   accountId: string
@@ -28,6 +29,7 @@ type ApiTransaction = {
   amountTo: string
   category: string
   senderAccountId: string
+  receiverAccountNumber: string
   receiverAccountId: string
 }
 
@@ -45,8 +47,18 @@ export default function AccountsPage() {
   const [to, setTo] = useState("")
   const [txs, setTxs] = useState<ApiTransaction[]>([])
   const [err, setErr] = useState("")
+  const resetFilters = () => {
+    setErr("")
+    setQ("")
+    setCategory("ALL")
+    setFrom("")
+    setTo("")
+  }
+
 
   const selectedAccount = accounts[selectedIndex]
+  const selectedCurrencies = (selectedAccount?.balances ?? []).map((b) => b.currency)
+  const defaultCurrency = "RSD"
 
   useEffect(() => {
     ; (async () => {
@@ -65,6 +77,7 @@ export default function AccountsPage() {
 
   const loadHistory = async () => {
     if (!selectedAccount) return
+    setErr("")
 
     const params = new URLSearchParams()
     params.set("accountId", selectedAccount.accountId)
@@ -82,8 +95,15 @@ export default function AccountsPage() {
 
   useEffect(() => {
     if (tab !== "history") return
-    loadHistory()
-  }, [tab, selectedAccount?.accountId])
+    if (!selectedAccount) return
+
+    const t = setTimeout(() => {
+      loadHistory()
+    }, q.trim() ? 350 : 0)
+
+    return () => clearTimeout(t)
+  }, [tab, selectedAccount?.accountId, q, category, from, to])
+
 
   return (
     <AppShell>
@@ -137,12 +157,17 @@ export default function AccountsPage() {
               <p><span className="text-slate-500">Account number:</span> {selectedAccount.number}</p>
               <p className="mt-1"><span className="text-slate-500">Status:</span> {selectedAccount.status}</p>
               <p className="mt-1"><span className="text-slate-500">Type:</span> {selectedAccount.accountType}</p>
-              <p className="mt-1"><span className="text-slate-500">Opening date:</span> {selectedAccount.openingDate}</p>
+              <p className="mt-1"><span className="text-slate-500">Opening date:</span> {formatDateSR(selectedAccount.openingDate)}</p>
             </div>
           </div>
 
           <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <SpendingChart accountId={selectedAccount.accountId} />
+            <SpendingChart
+              accountId={selectedAccount.accountId}
+              currencies={selectedCurrencies}
+              defaultCurrency={defaultCurrency}
+            />
+
           </div>
 
         </div>
@@ -164,12 +189,12 @@ export default function AccountsPage() {
                 {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
             </label>
-            <Input label="From (YYYY-MM-DD)" value={from} onChange={setFrom} placeholder="2026-02-01" />
-            <Input label="To (YYYY-MM-DD)" value={to} onChange={setTo} placeholder="2026-02-28" />
+            <Input label="From" value={from} onChange={setFrom} type="date" />
+            <Input label="To" value={to} onChange={setTo} type="date" />
           </div>
 
           <div className="mt-4">
-            <Button onClick={loadHistory}>Apply filters</Button>
+            <Button onClick={resetFilters}>Reset filters</Button>
           </div>
 
           <div className="mt-5 rounded-lg border">
@@ -180,11 +205,14 @@ export default function AccountsPage() {
                 {txs.map((t) => (
                   <div key={t.transactionId} className="flex items-center justify-between gap-6 p-4">
                     <div>
-                      <div className="font-medium">{t.description ?? "Credit transfer"}</div>
-                      <div className="mt-1 text-sm text-slate-500">{t.date} • {t.category}</div>
+                      <div className="font-medium text-slate-900">{t.description ?? "Credit transfer"}</div>
+                      <div className="mt-1 text-sm text-slate-500">
+                        {formatDateSR(t.date)} • {t.category} • Receiver: {t.receiverAccountNumber}
+                      </div>
+
                     </div>
                     <div className="text-right">
-                      <div className="font-semibold">{t.amountFrom} {t.fromCurrency}</div>
+                      <div className="font-semibold text-slate-900">{t.amountFrom} {t.fromCurrency}</div>
                       <div className="text-sm text-slate-500">→ {t.amountTo} {t.toCurrency}</div>
                     </div>
                   </div>

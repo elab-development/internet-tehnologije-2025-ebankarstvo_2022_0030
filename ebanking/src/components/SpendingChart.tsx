@@ -14,10 +14,12 @@ import {
 type Period = "monthly" | "quarterly" | "yearly"
 
 type ApiPoint = { label: string; total: string }
+
 type ApiResponse = { ok: true; currency: string; period: Period; points: ApiPoint[] }
 
 type Props = {
   accountId: string
+  currencies: string[]
   defaultCurrency?: string
 }
 
@@ -27,12 +29,19 @@ function formatTotal(x: string) {
   return n.toFixed(2)
 }
 
-export default function SpendingChart({ accountId, defaultCurrency = "RSD" }: Props) {
+export default function SpendingChart({ accountId, currencies, defaultCurrency = "RSD" }: Props) {
   const [period, setPeriod] = useState<Period>("monthly")
   const [currency, setCurrency] = useState(defaultCurrency)
   const [points, setPoints] = useState<{ label: string; total: number }[]>([])
   const [loading, setLoading] = useState(false)
   const [err, setErr] = useState("")
+
+  useEffect(() => {
+    if (!accountId) return
+    const list = Array.isArray(currencies) ? currencies : []
+    const next = list.includes("RSD") ? "RSD" : (list[0] ?? defaultCurrency)
+    setCurrency(next)
+  }, [accountId, defaultCurrency, currencies])
 
   useEffect(() => {
     if (!accountId) return
@@ -94,12 +103,16 @@ export default function SpendingChart({ accountId, defaultCurrency = "RSD" }: Pr
             <option value="yearly">Yearly</option>
           </select>
 
-          <input
-            className="w-24 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800"
+          <select
+            className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800"
             value={currency}
-            onChange={(e) => setCurrency(e.target.value.toUpperCase())}
-            placeholder="RSD"
-          />
+            onChange={(e) => setCurrency(e.target.value)}
+          >
+            {(currencies?.length ? currencies : [defaultCurrency]).map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+
         </div>
       </div>
 

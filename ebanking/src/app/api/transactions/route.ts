@@ -3,6 +3,7 @@ import { accounts, transactions } from "@/db/schema"
 import { COOKIE_NAME, verifyToken } from "@/lib/auth"
 import { requireUser } from "@/lib/requireUser"
 import { and, desc, eq, gte, ilike, inArray, lte, or, sql } from "drizzle-orm"
+import { alias } from "drizzle-orm/pg-core"
 import { cookies } from "next/headers"
 import { NextResponse } from "next/server"
 
@@ -85,12 +86,31 @@ export async function GET(req: Request) {
     if (minAmount) conds.push(gte(transactions.amountFrom, sql`${minAmount}`))
     if (maxAmount) conds.push(lte(transactions.amountFrom, sql`${maxAmount}`))
 
+    const senderAcc = alias(accounts, "senderAcc")
+    const receiverAcc = alias(accounts, "receiverAcc")
+
     const rows = await db
-      .select()
+      .select({
+        transactionId: transactions.transactionId,
+        date: transactions.date,
+        description: transactions.description,
+        category: transactions.category,
+        senderAccountId: transactions.senderAccountId,
+        receiverAccountId: transactions.receiverAccountId,
+        fromCurrency: transactions.fromCurrency,
+        toCurrency: transactions.toCurrency,
+        amountFrom: transactions.amountFrom,
+        amountTo: transactions.amountTo,
+        senderAccountNumber: senderAcc.number,
+        receiverAccountNumber: receiverAcc.number,
+      })
       .from(transactions)
+      .innerJoin(senderAcc, eq(transactions.senderAccountId, senderAcc.accountId))
+      .innerJoin(receiverAcc, eq(transactions.receiverAccountId, receiverAcc.accountId))
       .where(and(...conds))
       .orderBy(desc(transactions.date))
       .limit(limit)
+
 
     return NextResponse.json({ transactions: rows }, { status: 200 })
   } catch (e: any) {

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import AppShell from "@/components/AppShell"
 import AccountCarousel from "@/components/AccountCarousel"
 import Button from "@/components/Button"
+import { formatDateSR } from "@/lib/date"
 
 type ApiAccount = {
   accountId: string
@@ -27,6 +28,7 @@ type ApiTransaction = {
   category: string
   senderAccountId: string
   receiverAccountId: string
+  receiverAccountNumber: string
 }
 
 export default function HomePage() {
@@ -97,7 +99,7 @@ export default function HomePage() {
                   <div>
                     <div className="font-medium text-slate-900">{t.description ?? "Credit transfer"}</div>
                     <div className="mt-1 text-sm text-slate-500">
-                      {t.date} • {t.category}
+                      {formatDateSR(t.date)} • {t.category} • Receiver: {t.receiverAccountNumber}
                     </div>
                   </div>
                   <div className="text-right">

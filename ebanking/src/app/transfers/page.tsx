@@ -6,6 +6,7 @@ import Input from "@/components/Input"
 import { useEffect, useMemo, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Image from "next/image"
+import { formatDateSR } from "@/lib/date"
 
 type ApiBalance = {
     balanceId: string
@@ -89,7 +90,7 @@ export default function TransfersPage() {
     const [amount, setAmount] = useState("")
     const [category, setCategory] = useState<Category>("FOOD")
     const [description, setDescription] = useState("")
-    const [valueDate, setValueDate] = useState(todayISO())
+    const [valueDate] = useState(todayISO())
 
     const [lookupMsg, setLookupMsg] = useState("")
     const [err, setErr] = useState("")
@@ -411,7 +412,12 @@ export default function TransfersPage() {
 
                     <div className="mt-6 text-sm font-semibold text-slate-700">Value date</div>
                     <div className="mt-3 grid gap-4 lg:grid-cols-2">
-                        <Input label="Date (YYYY-MM-DD)" value={valueDate} onChange={setValueDate} placeholder="2026-02-07" />
+                        <input
+                            value={formatDateSR(valueDate)}
+                            readOnly
+                            disabled
+                            className="rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-slate-700 outline-none"
+                        />
 
                         <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
                             <div className="text-xs font-semibold text-slate-500">Summary</div>
