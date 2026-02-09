@@ -367,7 +367,7 @@ export default function TransfersPage() {
                                     type="button"
                                     onClick={lookupReceiver}
                                     className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-900 hover:bg-slate-50"
-                                >Lookup
+                                >Look up
                                 </button>
                                 <div className="text-sm text-slate-600">
                                     {receiverAccountId ? (

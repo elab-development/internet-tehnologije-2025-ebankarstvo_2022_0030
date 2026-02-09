@@ -101,11 +101,11 @@ export default function AdminApprovalsPage() {
                         <tbody>
                             {rows.map((u) => (
                                 <tr key={u.userId} className="border-t border-slate-100">
-                                    <td className="px-4 py-3">{u.name}</td>
-                                    <td className="px-4 py-3">{u.email}</td>
-                                    <td className="px-4 py-3">{u.phone}</td>
-                                    <td className="px-4 py-3">{u.userStatus}</td>
-                                    <td className="px-4 py-3">
+                                    <td className="px-4 py-3 text-slate-600">{u.name}</td>
+                                    <td className="px-4 py-3 text-slate-600">{u.email}</td>
+                                    <td className="px-4 py-3 text-slate-600">{u.phone}</td>
+                                    <td className="px-4 py-3 text-slate-600">{u.userStatus}</td>
+                                    <td className="px-4 py-3 text-slate-600">
                                         <div className="flex justify-end">
                                             <button
                                                 onClick={() => approve(u)}
