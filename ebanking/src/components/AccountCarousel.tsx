@@ -11,11 +11,7 @@ type AccountCard = {
   balances: { currency: string; amount: string }[]
 }
 
-export default function AccountCarousel({
-  accounts,
-  selectedIndex,
-  onChangeIndex,
-}: {
+export default function AccountCarousel({ accounts, selectedIndex, onChangeIndex, }: {
   accounts: AccountCard[]
   selectedIndex: number
   onChangeIndex: (i: number) => void
@@ -48,13 +44,13 @@ export default function AccountCarousel({
   const bal = a.balances.find((b) => b.currency === selectedCurrency) ?? a.balances[0]
 
   const prev = () => {
-    if (len < 2) 
+    if (len < 2)
       return
     onChangeIndex((safeIndex - 1 + len) % len)
   }
 
   const next = () => {
-    if (len < 2) 
+    if (len < 2)
       return
     onChangeIndex((safeIndex + 1) % len)
   }
