@@ -8,13 +8,7 @@ const PUBLIC_PATHS = ["/login", "/api/auth/login", "/api/auth/register"]
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
 
-  if (
-    pathname.startsWith("/_next") ||
-    pathname.startsWith("/favicon.ico") ||
-    pathname.startsWith("/icon.png") ||
-    pathname.startsWith("/login-hero.jpg") ||
-    pathname.startsWith("/public")
-  ) {
+  if (pathname.includes(".")) {
     return NextResponse.next()
   }
 
@@ -44,5 +38,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: ["/((?!api|_next|.*\\..*).*)"],
 }

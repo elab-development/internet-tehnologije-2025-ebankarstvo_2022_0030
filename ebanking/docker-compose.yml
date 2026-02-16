@@ -1,0 +1,28 @@
+services:
+  db:
+    image: postgres:17
+    container_name: ebanka-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ebanka
+    ports:
+      - "5432:5432"
+    volumes:
+      - ebanka_pgdata:/var/lib/postgresql/data
+
+  app:
+    build: .
+    container_name: ebanka-app
+    depends_on:
+      - db
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@db:5432/ebanka
+      NODE_ENV: production
+
+volumes:
+  ebanka_pgdata:
