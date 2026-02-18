@@ -3,12 +3,16 @@ import type { NextRequest } from "next/server"
 
 const COOKIE_NAME = "ebanka_token"
 
-const PUBLIC_PATHS = ["/login", "/api/auth/login", "/api/auth/register"]
+const PUBLIC_PATHS = ["/login", "/docs", "/api/auth/login", "/api/auth/register"]
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
 
   if (pathname.includes(".")) {
+    return NextResponse.next()
+  }
+
+  if (pathname === "/docs" || pathname.startsWith("/docs")) {
     return NextResponse.next()
   }
 

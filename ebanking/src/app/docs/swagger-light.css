@@ -1,0 +1,26 @@
+html,
+body {
+    background: #fff !important;
+}
+
+.swagger-ui {
+    background: #fff !important;
+    color: #111 !important;
+}
+
+.swagger-ui .topbar,
+.swagger-ui .information-container,
+.swagger-ui .scheme-container {
+    background: #fff !important;
+    box-shadow: none !important;
+    border-bottom: 1px solid #e5e7eb !important;
+}
+
+.swagger-ui .opblock {
+    border-radius: 12px !important;
+}
+
+.swagger-ui * {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
