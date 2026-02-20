@@ -15,7 +15,7 @@ const nextConfig: NextConfig = {
             value:
               "default-src 'self'; " +
               "img-src 'self' data: https:; " +
-              "script-src 'self'; " +
+              "script-src 'self' 'unsafe-inline'; " +
               "style-src 'self' 'unsafe-inline'; " +
               "object-src 'none'; " +
               "base-uri 'self'; " +
