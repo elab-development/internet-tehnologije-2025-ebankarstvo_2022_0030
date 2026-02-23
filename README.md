@@ -1,36 +1,99 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# E-Bankarstvo
 
-## Getting Started
+Web aplikacija za elektronsko bankarstvo razvijena u okviru predmeta Internet tehnologije.
 
-First, run the development server:
+## Funkcionalnosti
+
+- Registracija i prijava korisnika
+- Pregled tekućih i deviznih računa
+- Pregled i filtriranje transakcija
+- Prenos sredstava između računa
+- Devizna konverzija po dnevnom kursu
+- Grafički prikaz potrošnje
+- Administracija korisnika
+
+---
+
+## Tehnologije
+
+- Next.js (React + TypeScript)
+- Tailwind CSS
+- PostgreSQL
+- Drizzle ORM
+- JWT autentifikacija (HttpOnly cookie)
+- Docker
+
+---
+
+## Pokretanje projekta
+
+### 1. Kloniranje repozitorijuma
+
+```bash
+git clone https://github.com/elab-development/internet-tehnologije-2025-ebankarstvo_2022_0030.git
+cd internet-tehnologije-2025-ebankarstvo_2022_0030
+```
+
+### 2. Instalacija paketa
+
+```bash
+npm install
+```
+
+### 3. Pokretanje PostgreSQL baze (Docker)
+
+```bash
+docker run --name ebanking-postgres \
+-e POSTGRES_USER=postgres \
+-e POSTGRES_PASSWORD=postgres \
+-e POSTGRES_DB=ebanking \
+-p 5432:5432 \
+-v ebanking_pgdata:/var/lib/postgresql/data \
+-d postgres:17
+```
+
+### 4. Kreirati `.env` fajl u root folderu
+
+```env
+DATABASE_URL=postgres://postgres:postgres@localhost:5432/ebanking
+JWT_SECRET=SUPER_TAJNA
+JWT_EXPIRES=7d
+```
+
+### 5. Migracije baze
+
+```bash
+npm run db:migrate
+```
+
+### 6. (Opcionalno) Seed podaci
+
+```bash
+npm run db:seed
+```
+
+### 7. Pokretanje aplikacije
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Aplikacija je dostupna na:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+http://localhost:3000
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Deploy
 
-## Learn More
+Aplikacija je deployovana na Vercel platformi i dostupna je javno putem produkcionog URL-a: \
+https://internet-tehnologije-2025-ebankarstvo-2022-0030-8g8o-ptvzwyq5s.vercel.app/.\
+Za produkciju se koristi cloud PostgreSQL baza i environment varijable podešene na Vercel-u.
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Autor
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Uroš Kotaranin  
+2022/0030  
+Fakultet organizacionih nauka
