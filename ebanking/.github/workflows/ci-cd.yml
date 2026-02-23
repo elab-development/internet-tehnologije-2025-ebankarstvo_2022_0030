@@ -1,0 +1,75 @@
+name: CI/CD
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  test:
+    name: Test (migrate + seed + vitest)
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: ebanka
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres -d ebanka"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/ebanka
+      JWT_SECRET: test_jwt_secret
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Migrate DB
+        run: npm run db:migrate
+
+      - name: Run tests
+        run: npm test
+
+  docker:
+    name: Build Docker image
+    runs-on: ubuntu-latest
+    needs: [test]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t ebanking:${{ github.sha }} .
+
+  deploy:
+    name: Deploy to Vercel (main)
+    runs-on: ubuntu-latest
+    needs: [test, docker]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: Trigger Vercel Deploy Hook
+        run: curl -X POST "${{ secrets.VERCEL_DEPLOY_HOOK_URL }}"
